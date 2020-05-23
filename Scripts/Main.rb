@@ -7,9 +7,9 @@
 
 
 #Fuente por defecto usada por el juego 
-Font.default_name = "Press Start 2P"
+Font.default_name = "Code New Roman"
 #Tamaño de la fuente
-Font.default_size = 10
+Font.default_size = 18
 
 begin
   Graphics.freeze
