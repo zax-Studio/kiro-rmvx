@@ -1,0 +1,162 @@
+@Modules
+Vocab
+Sound
+Cache
+
+@Game Objects
+Game_Temp
+Game_System
+Game_Message
+Game_Switches
+Game_Variables
+Game_SelfSwitches
+Game_Screen
+Game_Picture
+Game_Battler
+Game_BattleAction
+Game_Actor
+Game_Enemy
+Game_Actors
+Game_Unit
+Game_Party
+Game_Troop
+Game_Map
+Game_CommonEvent
+Game_Character
+Game_Event
+Game_Vehicle
+Game_Player
+Game_Interpreter
+
+@Sprites
+Sprite_Base
+Sprite_Character
+Sprite_Battler
+Sprite_Picture
+Sprite_Timer
+Spriteset_Weather
+Spriteset_Map
+Spriteset_Battle
+
+@Windows
+Window_Base
+Window_Selectable
+Window_Command
+Window_Help
+Window_Gold
+Window_MenuStatus
+Window_Item
+Window_Skill
+Window_SkillStatus
+Window_Equip
+Window_EquipItem
+Window_EquipStatus
+Window_Status
+Window_SaveFile
+Window_ShopBuy
+Window_ShopSell
+Window_ShopNumber
+Window_ShopStatus
+Window_NameEdit
+Window_NameInput
+Window_NumberInput
+Window_Message
+Window_BattleMessage
+Window_PartyCommand
+Window_ActorCommand
+Window_TargetEnemy
+Window_BattleStatus
+Window_DebugLeft
+Window_DebugRight
+
+@Scenes
+Scene_Base
+Scene_Title
+Scene_Map
+Scene_Menu
+Scene_Item
+Scene_Skill
+Scene_Equip
+Scene_Status
+Scene_File
+Scene_End
+Scene_Shop
+Scene_Name
+Scene_Debug
+Scene_Battle
+Scene_Gameover
+Resize and Scale
+
+@PRABS
+PRCoders Module
+PR ABS
+
+Configuration - README
+Config - Keys
+Config - Texts
+Config - Skills
+Config - Items
+Config - Animations
+Config - Enemy
+Config - Weapons
+Config - Shield
+Config - Hotkeys
+Config - HUD
+
+Scene_Map~@1
+Scene_Item~@1
+Scene_Skill~@1
+
+@@Add Ons
+PR - HUD
+PR - Damage_System
+PR - LeftHand
+PR - Many Items
+PR - AMS
+AR - Active Party
+
+@Custom
+@@KGC's Scripts
+======Menu System======~blank
+MRA_LocationPlayTimeWindow
+===Misc Special Effects====~blank
+KGC_TitleDirection
+==Map&Movement System==~blank
+KGC_DayNight
+KGC_MiniMap
+----------------------------~blank
+
+@@MOG Location
+MOG_Location_Name_VX
+
+@@Wora's Scripts
+# ° Database Scripts #~blank
+on-screen shop
+# ° Scripts on Map   #~blank
+Map credit
+Lock Screen
+Wora - Advance Scroll Map
+# ° Scripts in Battle   #~blank
+level up recovery
+# ° Maker's Tools    #~blank
+Auto Backup
+# ° Misc.    #~blank
+Call Event VX
+Gradient Bug Fix
+Animation Bug Fixed
+Quick Save & Load & Delete
+Neo Save System
+----------------------------~blank
+@@Other
+Prexus - Party Manager
+
+game over menu
+
+Hide Item
+
+Caterpillar
+
+Window_Keys
+@Main Process
+@
+Main
