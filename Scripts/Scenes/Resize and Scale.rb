@@ -1,4 +1,3 @@
-=begin
 #==============================================================================
 # Resize and Scale Screen
 #==============================================================================
@@ -19,10 +18,11 @@
 #==============================================================================
 
 module OW_RaS
+  # TODO: Fix bug with compatibility with other scripts. Sprites are being carried over when scrolling to left or up
   # Screen width (in multiples of 32) [max = 640] [default = 544]
-  WIDTH = 544
+  WIDTH = 640
   # Screen height (in multiples of 32) [max = 480] [default = 416]
-  HEIGHT = 416
+  HEIGHT = 480
   # Scale multiplier factor (width = WIDTH * SCALE, height = HEIGHT * SCALE)
   # [default = 1.0] (1.0 = do NOT scale the game-window's size)
   SCALE = 1.0
@@ -927,4 +927,3 @@ class Scene_Battle < Scene_Base
     @actor_command_window.active = false
   end
 end
-=end
