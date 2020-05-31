@@ -143,22 +143,22 @@ module PRAMS
   # Fonte da Caixa de Nome
   NAME_FONT = Font.new
   # Nome da fonte
-  NAME_FONT.name = "Press Start 2P"
+  NAME_FONT.name = "Calling Code"
   # Tamanho da Fonte
-  NAME_FONT.size = 14
+  NAME_FONT.size = 20
   # Cor da Fonte
   NAME_FONT.color = Color.new(255, 20, 20)
   # Negrito? (false = falso ; true => verdadeiro)
-  NAME_FONT.bold = false
+  NAME_FONT.bold = true
   # Itálico? (false = falso ; true => verdadeiro)
   NAME_FONT.italic = false
   
   # Fonte da Caixa de Mensagem
   TEXT_FONT = Font.new
   # Nome da fonte
-  TEXT_FONT.name = "Press Start 2P"
+  TEXT_FONT.name = NAME_FONT.name
   # Tamanho da Fonte
-  TEXT_FONT.size = 12
+  TEXT_FONT.size = 16
   # Cor da Fonte
   TEXT_FONT.color = Color.new(255, 255, 255)
   # Negrito? (false = falso ; true => verdadeiro)

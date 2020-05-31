@@ -310,6 +310,7 @@ class Game_Party
   alias_method :abs_party_add_actor, :add_actor
   def add_actor(actor_id)
     abs_party_add_actor(actor_id)
+    regroup()
     update_orig_party_order()
   end
   

@@ -131,7 +131,7 @@ module Input
   
   A = Letters["C"]
   B = [Letters["X"], Esc]
-  C = [Space, Enter]
+  C = [Letters["Z"], Space, Enter]
   X = Letters["A"]
   Y = Letters["S"]
   Z = Letters["D"]

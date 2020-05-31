@@ -5,7 +5,7 @@
 module PRABS::CONFIG::BUTTONS
 
   # Dodge Key
-  ESQUIVAR = Input::Letters["Z"]
+  ESQUIVAR = Input::Z # D
   
   # Right Hand
   RIGHT_HAND = Input::X # A
@@ -14,7 +14,7 @@ module PRABS::CONFIG::BUTTONS
   LEFT_HAND = Input::Y # S
   
   # Jump
-  JUMP = Input::Z # D
+  JUMP = Input::Letters["F"]
 
   # Switch player
   SWITCH_PLAYER = Input::Shift
