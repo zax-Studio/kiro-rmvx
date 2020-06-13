@@ -73,8 +73,8 @@ class Game_Follower < Game_Character
   
   def initialize(actor)
     super()
-    @through = false
-    @priority_type = 1
+    @through = true
+    @priority_type = 0
     @actor = actor
     trick_caterpillar_follower_initialize
     setup if actor != nil
@@ -102,7 +102,8 @@ class Game_Follower < Game_Character
     end
     @opacity = 255
     @blend_type = 0
-    @priority_type = 0
+    @through = false
+    @priority_type = 1
   end
 
   #--------------------------------------------------------------------------

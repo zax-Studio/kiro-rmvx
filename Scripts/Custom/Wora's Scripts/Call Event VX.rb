@@ -33,7 +33,7 @@ set 'page you want' to 0
 #------------------------------------------------------------
 
 # Make variable 'event' readable from outside
-class Game_Event; attr_reader :event; end
+#class Game_Event; attr_reader :event; end
 class Game_Interpreter
   def callev(evid = 0,page = 0, id_map = $game_map.map_id)
     return if evid == 0

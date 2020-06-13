@@ -155,7 +155,7 @@ class Game_Follower < Game_Character
     abs_targets = ABS_Targets.new
     for char in $game_map.screen_enemies.values
       if char.battler != nil
-        abs_targets.push(ABS_Target.new(char, get_dist(char)))
+        abs_targets.push(ABS_Target.new(char, get_dist(char))) unless char.battler.dead?
       end
     end
     @abs_target = abs_targets.get_closest
@@ -199,13 +199,15 @@ class Game_Follower < Game_Character
     data = PRABS::HERO.get_sequence(@battler.id, @battler.weapon_id, combo_index)
     # Randomness of attack sequence (FrontAttack,Circle)
     sequence = data[rand(data.length)]
-    animation_name = sequence[2]
-    $game_map.setup_map_animation(sequence[1], target.x, target.y, @direction) 
-    real_name = @character_name + "/" + animation_name
-    if (!FRAMES[real_name].nil?)
-      frames = FRAMES[real_name]
-      @abs_animation.setup(real_name, frames)
-      attack(target, (DAMAGE_FRAME[real_name].nil? ? 0 : DAMAGE_FRAME[real_name]))
+    if !sequence.nil?
+      animation_name = sequence[2]
+      $game_map.setup_map_animation(sequence[1], target.x, target.y, @direction) 
+      real_name = @character_name + "/" + animation_name
+      if (!FRAMES[real_name].nil?)
+        frames = FRAMES[real_name]
+        @abs_animation.setup(real_name, frames)
+        attack(target, (DAMAGE_FRAME[real_name].nil? ? 0 : DAMAGE_FRAME[real_name]))
+      end
     else
       attack(target, 0)
     end
@@ -459,5 +461,17 @@ class Scene_Map < Scene_Base
     $game_map.update
     @spriteset = Spriteset_Map.new  # Recreate sprite set
     Input.update
+  end
+end
+
+class Game_Interpreter
+  def is_character_on_top?
+    this_event = get_character(0)
+    return true if $game_player.pos?(this_event.x, this_event.y)
+    $game_party.followers.each do |char|
+      return true if char.pos_nt?(this_event.x, this_event.y)
+    end
+
+    return false
   end
 end

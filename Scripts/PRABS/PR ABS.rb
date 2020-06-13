@@ -489,8 +489,8 @@ class Game_Character
   #--------------------------------------------------------------------------
   
   def passable?(x, y)
-    x = $game_map.round_x(x)                    
-    y = $game_map.round_y(y)                  
+    x = $game_map.round_x(x)
+    y = $game_map.round_y(y)
     return false unless $game_map.valid?(x, y)
     return true if (@through or debug_through?)
     return false unless map_passable?(x, y)
@@ -500,6 +500,15 @@ class Game_Character
       return false if collide_with_characters?(x, y)
     end
     return true                                     
+  end
+
+  def jumpable?(x, y)
+    x = $game_map.round_x(x)
+    y = $game_map.round_y(y)
+    for event in $game_map.screen_events_xy(x, y)
+      return true if event.jumpable
+    end
+    return false
   end
   
 end
@@ -2930,7 +2939,7 @@ class Game_Character
         return true if char.pos?(x, y) && !(self.is_a?(Game_Player) || self.is_a?(Game_Follower))
       end
     end
-    if @priority_type == 1
+    if @priority_type == 1 && !self.is_a?(Game_Follower)
       unless $game_player.abs_through?(self)      
         return true if $game_player.pos_nt?(x, y)
       end
@@ -2977,6 +2986,8 @@ end
 #==============================================================================
 
 class Game_Event < Game_Character
+
+  attr_reader :jumpable
   
   #--------------------------------------------------------------------------
   # ● Alias
@@ -3231,6 +3242,8 @@ class Game_Event < Game_Character
     # No_Damage
     @no_damage = false
     @fake_enemy = false
+    # Jumpable
+    @jumpable = false
   end
   
   #--------------------------------------------------------------------------
@@ -3349,6 +3362,8 @@ class Game_Event < Game_Character
           @recover_hp_delay = @original_hp_delay = $2.to_i
         when /hud_balloon[ ]?(\d+)/
           @hud_balloon_id = $1.to_i
+        when /jumpable/
+          @jumpable = true
         end
       end
     end
@@ -3876,21 +3891,24 @@ class Game_Player < Game_Character
     elsif x_plus.abs > y_plus.abs         
       y_plus < 0 ? turn_up : turn_down
     end
+    
+    if jumpable?(@x + x_plus, @y + y_plus)
+      x_plus *= 2
+      y_plus *= 2
+    end
+
     if passable?(@x + x_plus, @y + y_plus)
       @x += x_plus
       @y += y_plus
       $game_party.update_move(5, x_plus, y_plus)
       distance = 1# Math.sqrt(x_plus * x_plus + y_plus * y_plus).round
       @jump_peak = 10 + distance - @move_speed
-      @jump_count = @jump_peak * 2
-      @stop_count = 0
-      straighten
     else
       @jump_peak = 10 - @move_speed
-      @jump_count = @jump_peak * 2
-      @stop_count = 0
-      straighten
     end
+    @jump_count = @jump_peak * 2
+    @stop_count = 0
+    straighten
   end
 
   #--------------------------------------------------------------------------
