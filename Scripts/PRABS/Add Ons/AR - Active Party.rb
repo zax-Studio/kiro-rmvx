@@ -206,10 +206,11 @@ class Game_Follower < Game_Character
       if (!FRAMES[real_name].nil?)
         frames = FRAMES[real_name]
         @abs_animation.setup(real_name, frames)
-        attack(target, (DAMAGE_FRAME[real_name].nil? ? 0 : DAMAGE_FRAME[real_name]))
+        attack(target, (DAMAGE_FRAME[real_name].nil? ? DEFAULT_DAMAGE_FRAME : DAMAGE_FRAME[real_name]))
       end
     else
-      attack(target, 0)
+      @abs_animation.setup(@character_name, DEFAULT_FRAMES)
+      attack(target, DEFAULT_DAMAGE_FRAME)
     end
   end
   

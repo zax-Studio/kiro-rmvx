@@ -862,7 +862,7 @@ module PRABS
     module ANIMATION
         
       DELAY = 2
-      DEFAULT_FRAMES = 4  
+      DEFAULT_FRAMES = 12
       DEFAULT_DAMAGE_FRAME = 0 
       
       FRAMES = {}
@@ -3039,30 +3039,6 @@ class Game_Event < Game_Character
   end
   
   #--------------------------------------------------------------------------
-  # ● Habilidade do ABS
-  #--------------------------------------------------------------------------
-
-  def abs_attack(combo_index = 1)
-    return false if @battler.nil?
-    front_x = $game_map.x_with_direction(@x, @direction)
-    front_y = $game_map.y_with_direction(@y, @direction)
-    animation = $game_map.setup_map_animation(PRABS::CONFIG::ENEMY.get_animation_attack_id(@enemy_id, combo_index), front_x, front_y, @direction)
-    animation_name = PRABS::CONFIG::ENEMY.get_animation_attack(@enemy_id, combo_index)
-    if animation_name != ""
-      real_name = @character_name + "/" + animation_name
-      frames = (FRAMES[real_name].nil? ? DEFAULT_FRAMES : FRAMES[real_name])
-      @abs_animation.setup(real_name, frames)
-    end
-    if $game_player.pos?(front_x, front_y)
-      if $game_player.battler != nil
-        attack($game_player, (DAMAGE_FRAME[real_name].nil? ? 0 : DAMAGE_FRAME[real_name]))
-      else
-        attack($game_player, 0)
-      end
-    end
-  end
-  
-  #--------------------------------------------------------------------------
   # ● Item
   #--------------------------------------------------------------------------
 
@@ -3570,36 +3546,19 @@ class Game_Event < Game_Character
   # ● Ataca o jogador
   #--------------------------------------------------------------------------
   
-  def player_attack(combo_index)
-    return if $game_player.battler.nil?
-    animation_name = PRABS::CONFIG::ENEMY.get_animation_attack(@enemy_id, combo_index)
-    $game_map.setup_map_animation(PRABS::CONFIG::ENEMY.get_animation_attack_id(@enemy_id, combo_index), $game_player.x, $game_player.y, @direction)
-    if animation_name != ""
-      real_name = @character_name + "/" + animation_name
-      frames = (FRAMES[real_name].nil? ? DEFAULT_FRAMES : FRAMES[real_name])
-      @abs_animation.setup(real_name, frames)
-      attack($game_player, (DAMAGE_FRAME[real_name].nil? ? 0 : DAMAGE_FRAME[real_name]))
-    else
-      attack($game_player, 0)
-    end
-  end
-  
-  #--------------------------------------------------------------------------
-  # ● Ataca o jogador
-  #--------------------------------------------------------------------------
-  
   def target_attack(target, combo_index)
     return if target.battler.nil?
     animation_name = PRABS::CONFIG::ENEMY.get_animation_attack(@enemy_id, combo_index)
     $game_map.setup_map_animation(PRABS::CONFIG::ENEMY.get_animation_attack_id(@enemy_id, combo_index), target.x, target.y, @direction)
+    real_name = ""
     if animation_name != ""
       real_name = @character_name + "/" + animation_name
-      frames = (FRAMES[real_name].nil? ? DEFAULT_FRAMES : FRAMES[real_name])
-      @abs_animation.setup(real_name, frames)
-      attack(target, (DAMAGE_FRAME[real_name].nil? ? 0 : DAMAGE_FRAME[real_name]))
     else
-      attack(target, 0)
+      real_name = @character_name
     end
+    frames = (FRAMES[real_name].nil? ? DEFAULT_FRAMES : FRAMES[real_name])
+    @abs_animation.setup(real_name, frames)
+    attack(target, (DAMAGE_FRAME[real_name].nil? ? DEFAULT_DAMAGE_FRAME : DAMAGE_FRAME[real_name]))
   end
   
   #--------------------------------------------------------------------------
