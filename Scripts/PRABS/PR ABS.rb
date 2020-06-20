@@ -505,6 +505,10 @@ class Game_Character
   def jumpable?(x, y)
     x = $game_map.round_x(x)
     y = $game_map.round_y(y)
+    tile_id = $game_map.get_tile_id(x, y, 0)
+    if tile_id != nil        # タイル ID 取得失敗 : 通行不可
+      return true if $game_map.tile_waters?(tile_id)
+    end
     for event in $game_map.screen_events_xy(x, y)
       return true if event.jumpable
     end
@@ -4741,7 +4745,7 @@ class Game_Map
       return false if pass & flag == flag   # [×] : 通行不可
     end
     for i in [2, 1, 0]                      # レイヤーの上から順に調べる
-      tile_id = @map.data[x, y, i]          # タイル ID を取得
+      tile_id = get_tile_id(x, y, i)
       return false if tile_id == nil        # タイル ID 取得失敗 : 通行不可
       return true if tile_waters?(tile_id)
       pass = @passages[tile_id]             # 通行属性を取得
@@ -4750,6 +4754,10 @@ class Game_Map
       return false if pass & flag == flag   # [×] : 通行不可
     end
     return false                            # 通行不可
+  end
+
+  def get_tile_id(x, y, z)
+    return @map.data[x, y, z]               # タイル ID を取得
   end
 
 end
