@@ -23,6 +23,7 @@ class Sprite_Character < Sprite_Base
     super(viewport)
     @character = character
     @balloon_duration = 0
+    @character.balloon_id = @character.permanent_balloon_id if @character.balloon_id == 0 && @character.permanent_balloon_id != 0
     update
   end
   #--------------------------------------------------------------------------
@@ -133,7 +134,7 @@ class Sprite_Character < Sprite_Base
     if @balloon_duration > 0
       @balloon_duration -= 1
       if @balloon_duration == 0
-        if @character.permanent_balloon
+        if @character.permanent_balloon_id != 0
           @character.balloon_id = @balloon_id
         end
         dispose_balloon

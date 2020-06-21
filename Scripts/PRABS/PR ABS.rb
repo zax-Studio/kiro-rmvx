@@ -2352,7 +2352,7 @@ class Game_Character
   attr_accessor :last_action_type
   attr_accessor :last_action
   attr_accessor :attacked_by
-  attr_accessor :permanent_balloon
+  attr_accessor :permanent_balloon_id
 
   #--------------------------------------------------------------------------
   # ● Alias
@@ -2391,7 +2391,7 @@ class Game_Character
     pr_abs_game_character_initialize
 
     @abs_target = ABS_Target.new(nil, 99)
-    @permanent_balloon = false
+    @permanent_balloon_id = 0
   end
   
   def get_dist(character)
@@ -3226,7 +3226,7 @@ class Game_Event < Game_Character
     @fake_enemy = false
     # Jumpable
     @jumpable = false
-    @permanent_balloon = false
+    @permanent_balloon_id = 0
   end
   
   #--------------------------------------------------------------------------
@@ -3346,8 +3346,7 @@ class Game_Event < Game_Character
         when /hud_balloon[ ]?(\d+)/
           @hud_balloon_id = $1.to_i
         when /map_balloon[ ]?(\d+)/
-          @balloon_id = $1.to_i
-          @permanent_balloon = true
+          @balloon_id = @permanent_balloon_id = $1.to_i
         when /jumpable/
           @jumpable = true
         end
@@ -4749,7 +4748,7 @@ class Game_Interpreter
   end
 
   def reset_balloon
-    $game_map.events[@event_id].permanent_balloon = false
+    $game_map.events[@event_id].permanent_balloon_id = 0
   end
   
   def hit_weapon?(weapon_id)
