@@ -11,6 +11,6 @@ module PRABS::CONFIG
   HUD_SHOW_VALUES = 57
   
   # HUS Starts on?
-  HUD_START_ON = false
+  HUD_START_ON = true
   
 end

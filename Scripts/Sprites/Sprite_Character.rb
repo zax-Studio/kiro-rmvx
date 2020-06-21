@@ -133,6 +133,9 @@ class Sprite_Character < Sprite_Base
     if @balloon_duration > 0
       @balloon_duration -= 1
       if @balloon_duration == 0
+        if @character.permanent_balloon
+          @character.balloon_id = @balloon_id
+        end
         dispose_balloon
       else
         @balloon_sprite.x = x
