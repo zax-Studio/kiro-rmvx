@@ -50,6 +50,27 @@ class Game_Character
     @mp_damages = character.mp_damages
     @messages = character.messages
   end
+
+  def move_on_top_of_player
+    @real_x = $game_player.real_x
+    @real_y = $game_player.real_y - 256
+  end
+end
+
+class Game_Event < Game_Character
+  attr_accessor :update_on_top_of_player
+
+  alias_method :abs_ar_ge_initialize, :initialize
+  def initialize(map_id, event)
+    abs_ar_ge_initialize(map_id, event)
+    @update_on_top_of_player = false
+  end
+
+  alias_method :abs_ar_ge_update, :update
+  def update
+    abs_ar_ge_update
+    move_on_top_of_player if update_on_top_of_player
+  end
 end
 
 class Game_Follower < Game_Character
@@ -474,5 +495,11 @@ class Game_Interpreter
     end
 
     return false
+  end
+
+  def animate_item_found
+    this_event = get_character(0)
+    this_event.update_on_top_of_player = true
+    this_event.jump(0, 0)
   end
 end
