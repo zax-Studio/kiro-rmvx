@@ -491,6 +491,7 @@ class Game_Interpreter
     this_event = get_character(0)
     return true if $game_player.pos?(this_event.x, this_event.y)
     $game_party.followers.each do |char|
+      next if char.battler.nil?
       return true if char.pos_nt?(this_event.x, this_event.y)
     end
 
