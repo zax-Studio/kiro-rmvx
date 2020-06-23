@@ -129,7 +129,7 @@ class Game_Follower < Game_Character
         @is_fighting = true
       end
     elsif @is_inline && !$game_player.attacked_by.nil?
-      if $game_player.attacked_by.dead?
+      if $game_player.attacked_by.battler.nil? || $game_player.attacked_by.dead?
         $game_player.attacked_by = nil
       else
         move_toward_character($game_player.attacked_by)
@@ -184,7 +184,7 @@ class Game_Follower < Game_Character
   end
 
   def update_automove
-    @enemy_on_sight = (@abs_target.distance <= @automove_sight)
+    @enemy_on_sight = @abs_target.distance <= @automove_sight
     if @enemy_on_sight
       move_toward_character(@abs_target.character)
     elsif !@is_inline && $game_party.following_leader
@@ -224,11 +224,13 @@ class Game_Follower < Game_Character
       animation_name = sequence[2]
       $game_map.setup_map_animation(sequence[1], target.x, target.y, @direction) 
       real_name = @character_name + "/" + animation_name
-      if (!FRAMES[real_name].nil?)
-        frames = FRAMES[real_name]
-        @abs_animation.setup(real_name, frames)
-        attack(target, (DAMAGE_FRAME[real_name].nil? ? DEFAULT_DAMAGE_FRAME : DAMAGE_FRAME[real_name]))
+      frames = FRAMES[real_name]
+      if (frames.nil?)
+        real_name = @character_name
+        frames = DEFAULT_FRAMES
       end
+      @abs_animation.setup(real_name, frames)
+      attack(target, (DAMAGE_FRAME[real_name].nil? ? DEFAULT_DAMAGE_FRAME : DAMAGE_FRAME[real_name]))
     else
       @abs_animation.setup(@character_name, DEFAULT_FRAMES)
       attack(target, DEFAULT_DAMAGE_FRAME)
