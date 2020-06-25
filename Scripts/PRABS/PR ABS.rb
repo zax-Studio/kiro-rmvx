@@ -4495,7 +4495,6 @@ class Game_Map
     enemy = char.battler
     if PRCoders.logged_and_loaded?("ManyItems")
       items = enemy.drop_items
-      items += [enemy.drop_item1, enemy.drop_item2]
     else
       items = [enemy.drop_item1, enemy.drop_item2]
     end

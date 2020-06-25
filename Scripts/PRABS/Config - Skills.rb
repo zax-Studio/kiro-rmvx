@@ -44,7 +44,7 @@ module PRABS::CONFIG::DATABASE
   # FireBall
   SKILLS[87] = [64, 2, SHOOT, ""]
   # Arrow
-  SKILLS[88] = [64, 3, SHOOT, "", [35, 1, true]]
+  SKILLS[88] = [64, 3, SHOOT, "", [35, 1, true], 7]
   # Lanza
   SKILLS[91] = [64, 6, SHOOT, "", nil, 83]
 
