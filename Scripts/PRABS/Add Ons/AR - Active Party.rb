@@ -199,6 +199,10 @@ class Game_Follower < Game_Character
   end
 
   def use_autoattack(char)
+    if char.nil?
+      set_follow_line_variables
+      return
+    end
     break_line()
     @is_fighting = true
     dx = (@x - char.x).abs
