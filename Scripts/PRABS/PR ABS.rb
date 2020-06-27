@@ -4216,6 +4216,11 @@ class Game_Player < Game_Character
       for event in $game_map.screen_events_xy(front_x, front_y)
         @hitted |= event.suffer_attack(self, delay, left_handed) if event.weapon_hittable?
       end
+      if @battler.weapon_id == 33 # Pickaxe
+        if $game_map.tall_ground?(front_x, front_y)
+          pickaxe_tall_ground
+        end
+      end
       return
     elsif (sequence[1] < 0)
       if (use_item($data_items[sequence[1]], delay, false))
@@ -4231,6 +4236,19 @@ class Game_Player < Game_Character
       return true
     end
     return false
+  end
+
+  def pickaxe_tall_ground
+    $game_map.data[front_x, front_y, 0] = 1584
+    paint_side_walls = true
+    for i in 1..3
+      paint_side_walls = $game_map.tall_ground?(front_x, front_y - i)
+      break unless paint_side_walls
+    end
+    if paint_side_walls
+      $game_map.data[front_x, front_y - 1, 0] = 8109
+      $game_map.data[front_x, front_y - 2, 0] = 8103
+    end
   end
       
   #--------------------------------------------------------------------------
@@ -4695,6 +4713,19 @@ class Game_Map
     return true if tile_id >= 2528 && tile_id < 2576
     return true if tile_id >= 2624 && tile_id < 2672
     return true if tile_id >= 2720 && tile_id < 2768
+    return false
+  end
+
+  #--------------------------------------------------------------------------
+  # ● Is tile a tall ground? (destructible with the Pickaxe)
+  #--------------------------------------------------------------------------
+
+  def tall_ground?(x, y)
+    tile_id = get_tile_id(x, y, 0)
+    if tile_id != nil
+      return true if tile_id >= 7712 && tile_id <= 7758
+      return true if tile_id >= 8096 && tile_id <= 8111
+    end
     return false
   end
   
