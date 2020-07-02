@@ -3041,6 +3041,30 @@ class Game_Event < Game_Character
   end
   
   #--------------------------------------------------------------------------
+  # ● Habilidade do ABS
+  #--------------------------------------------------------------------------
+
+  def abs_attack(combo_index = 1)
+    return false if @battler.nil?
+    front_x = $game_map.x_with_direction(@x, @direction)
+    front_y = $game_map.y_with_direction(@y, @direction)
+    animation = $game_map.setup_map_animation(PRABS::CONFIG::ENEMY.get_animation_attack_id(@enemy_id, combo_index), front_x, front_y, @direction)
+    animation_name = PRABS::CONFIG::ENEMY.get_animation_attack(@enemy_id, combo_index)
+    if animation_name != ""
+      real_name = @character_name + "/" + animation_name
+      frames = (FRAMES[real_name].nil? ? DEFAULT_FRAMES : FRAMES[real_name])
+      @abs_animation.setup(real_name, frames)
+    end
+    if $game_player.pos?(front_x, front_y)
+      if $game_player.battler != nil
+        attack($game_player, (DAMAGE_FRAME[real_name].nil? ? 0 : DAMAGE_FRAME[real_name]))
+      else
+        attack($game_player, 0)
+      end
+    end
+  end
+  
+  #--------------------------------------------------------------------------
   # ● Item
   #--------------------------------------------------------------------------
 
