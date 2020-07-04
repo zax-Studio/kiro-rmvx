@@ -857,16 +857,27 @@ end
 
 module PRABS
   
+  module UTILS
+    def self.has_dollar_sign?(character_name)
+      sign = character_name[/^[\!\$]./]
+      return (sign != nil && sign.include?('$'))
+    end
+  end
+
   module CONFIG
       
     module ANIMATION
         
       DELAY = 2
-      DEFAULT_FRAMES = 12
-      DEFAULT_DAMAGE_FRAME = 0 
+      DEFAULT_FRAMES = 3
+      DEFAULT_DAMAGE_FRAME = 3
       
       FRAMES = {}
-      DAMAGE_FRAME = {}   
+      DAMAGE_FRAME = {}
+
+      def self.get_default_frames(character_name)
+        return PRABS::UTILS.has_dollar_sign?(character_name) ? 3 : 12
+      end
     end
     
     module ENEMY
@@ -1089,11 +1100,18 @@ class ABSAnimation
   # - Define a animação
   #-----------------------------------------------------------------------------
   
-  def setup(name, frames, loop = false, play = true)
+  def setup(name, frames, loop = false, play = true, character_index = 0)
     @no_image = (name == "")
     @name = name.dup
     @frames = frames
     @index = 0
+    @character_index = character_index
+    if @frames == 12 && @character_index > 0
+      if @character_index >= 4
+        @character_index -= 4
+      end
+      @index = @character_index * 3
+    end
     @play = play
     @active = true
     unless @play
@@ -1114,7 +1132,7 @@ class ABSAnimation
     if @play
       if @index < @frames
         @index += 1
-        if (@index >= @frames)
+        if (@index >= @frames) || (@frames == 12 && @index >= (@character_index + 1) * 3)
           if (@loop)
             @index = 0
             return
@@ -2554,7 +2572,11 @@ class Game_Character
   def setup_animation(animation_name, loop = false, play = true)
     if animation_name != ""
       real_name = @character_name + "/" + animation_name
-      frames = (FRAMES[real_name].nil? ? DEFAULT_FRAMES : FRAMES[real_name])
+      frames = FRAMES[real_name]
+      if frames.nil?
+        real_name = @character_name
+        frames = PRABS::CONFIG::ANIMATION.get_default_frames(@character_name)
+      end
       @abs_animation.setup(real_name, frames, loop, play)
     else
       @abs_animation.setup("", DEFAULT_FRAMES, loop, play)
@@ -3050,14 +3072,17 @@ class Game_Event < Game_Character
     front_y = $game_map.y_with_direction(@y, @direction)
     animation = $game_map.setup_map_animation(PRABS::CONFIG::ENEMY.get_animation_attack_id(@enemy_id, combo_index), front_x, front_y, @direction)
     animation_name = PRABS::CONFIG::ENEMY.get_animation_attack(@enemy_id, combo_index)
+    real_name = ""
     if animation_name != ""
       real_name = @character_name + "/" + animation_name
-      frames = (FRAMES[real_name].nil? ? DEFAULT_FRAMES : FRAMES[real_name])
-      @abs_animation.setup(real_name, frames)
+    else
+      real_name = @character_name
     end
+    frames = (FRAMES[real_name].nil? ? PRABS::CONFIG::ANIMATION.get_default_frames(@character_name) : FRAMES[real_name])
+    @abs_animation.setup(real_name, frames, false, true, @character_index)
     if $game_player.pos?(front_x, front_y)
       if $game_player.battler != nil
-        attack($game_player, (DAMAGE_FRAME[real_name].nil? ? 0 : DAMAGE_FRAME[real_name]))
+        attack($game_player, (DAMAGE_FRAME[real_name].nil? ? DEFAULT_DAMAGE_FRAME : DAMAGE_FRAME[real_name]))
       else
         attack($game_player, 0)
       end
@@ -3585,8 +3610,8 @@ class Game_Event < Game_Character
     else
       real_name = @character_name
     end
-    frames = (FRAMES[real_name].nil? ? DEFAULT_FRAMES : FRAMES[real_name])
-    @abs_animation.setup(real_name, frames)
+    frames = (FRAMES[real_name].nil? ? PRABS::CONFIG::ANIMATION.get_default_frames(@character_name) : FRAMES[real_name])
+    @abs_animation.setup(real_name, frames, false, true, @character_index)
     attack(target, (DAMAGE_FRAME[real_name].nil? ? DEFAULT_DAMAGE_FRAME : DAMAGE_FRAME[real_name]))
   end
   
@@ -4970,8 +4995,9 @@ class Sprite_Character < Sprite_Base
         sy = (index / 4 * 4 + (@character.direction - 2) / 2) * @ch
       else
         pattern = (@character.shielded ? (character.pattern < 3 ? @character.pattern : 1) : @character.abs_animation.index)
+        is_second_row = !PRABS::UTILS.has_dollar_sign?(@character.abs_animation.name) && @character.character_index >= 4
         sx = (@cw * pattern)
-        sy = (@character.direction - 2) / 2 * @ch
+        sy = (@character.direction - 2) / 2 * @ch + (is_second_row ? 128 : 0)
       end
       self.src_rect.set(sx, sy, @cw, @ch)
       return

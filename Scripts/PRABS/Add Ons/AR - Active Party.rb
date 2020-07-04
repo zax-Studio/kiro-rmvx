@@ -226,7 +226,8 @@ class Game_Follower < Game_Character
     sequence = data[rand(data.length)]
     if !sequence.nil?
       animation_name = sequence[2]
-      $game_map.setup_map_animation(sequence[1], target.x, target.y, @direction) 
+      skill = $data_skills[sequence[1]]
+      $game_map.setup_map_animation(skill.nil? ? 0 : skill.animation_id, target.x, target.y, @direction) 
       real_name = @character_name + "/" + animation_name
       frames = FRAMES[real_name]
       if (frames.nil?)
