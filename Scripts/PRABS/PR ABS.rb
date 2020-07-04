@@ -4242,7 +4242,7 @@ class Game_Player < Game_Character
       end
       if @battler.weapon_id == 33 # Pickaxe
         if $game_map.tall_ground?(front_x, front_y)
-          pickaxe_tall_ground
+          pickaxe_tall_ground(front_x, front_y)
         end
       end
       return
@@ -4262,16 +4262,16 @@ class Game_Player < Game_Character
     return false
   end
 
-  def pickaxe_tall_ground
-    $game_map.data[front_x, front_y, 0] = 1584
+  def pickaxe_tall_ground(x, y)
+    $game_map.data[x, y, 0] = 1584
     paint_side_walls = true
     for i in 1..3
-      paint_side_walls = $game_map.tall_ground?(front_x, front_y - i)
+      paint_side_walls = $game_map.tall_ground?(x, y - i)
       break unless paint_side_walls
     end
     if paint_side_walls
-      $game_map.data[front_x, front_y - 1, 0] = 8109
-      $game_map.data[front_x, front_y - 2, 0] = 8103
+      $game_map.data[x, y - 1, 0] = 8109
+      $game_map.data[x, y - 2, 0] = 8103
     end
   end
       
@@ -4806,7 +4806,14 @@ class Game_Interpreter
   end
   
   def hit_weapon?(weapon_id)
-    return ($game_self_switches.data[[@map_id, @event_id, "WHIT_ID"]] == weapon_id)
+    if (weapon_id.is_a?(Array))
+      for id in weapon_id
+        return true if hit_weapon?(id)
+      end
+      return false
+    else
+      return ($game_self_switches.data[[@map_id, @event_id, "WHIT_ID"]] == weapon_id)
+    end
   end
   
   def hit_item?(item_id)
