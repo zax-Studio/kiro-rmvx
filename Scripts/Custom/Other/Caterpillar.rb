@@ -320,6 +320,10 @@ class Game_Player
   def moveto(x, y)
     $game_party.moveto_party(x, y)
     trick_caterpillar_player_moveto(x, y)
+
+    if $game_switches[63]
+      $save.do(1);
+    end
   end
 
   #--------------------------------------------------------------------------
