@@ -179,8 +179,8 @@ class Game_Party
   def update_followers
     flag = $game_player.transparent || $game_switches[CATERPILLAR]
     @followers.each_with_index do |char, i|
-      next if i >= @actors.length - 1
       char.actor = @actors[i + 1]
+      next if i >= @actors.length - 1
       char.move_speed = $game_player.move_speed
       if $game_player.dash?
         char.move_speed += 1

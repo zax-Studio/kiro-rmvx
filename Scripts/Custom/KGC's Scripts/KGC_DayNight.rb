@@ -91,7 +91,7 @@ module KGC
 
   #                         ◆ Stop On Event Toggle ◆ 
   #  Stops the Day/Night Timer when an event is run by player.
-  STOP_ON_EVENT = false
+  STOP_ON_EVENT = true
   
   #                         ◆ Phases During Combat ◆
   #  true = Only the battleback is tinted.

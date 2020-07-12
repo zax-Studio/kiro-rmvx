@@ -311,8 +311,8 @@ end
 
 class Game_Party
   # Config
-  FOLLOW_LEADER_SWITCH = 151
-  MEETING_POSITION_SWITCH = 150
+  FOLLOW_LEADER_SWITCH = 161
+  MEETING_POSITION_SWITCH = 160
   #=======
 
   include Input
