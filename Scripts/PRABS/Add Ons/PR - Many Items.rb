@@ -24,16 +24,16 @@ module PRManyItems
   # DATA[enemy ID] = [item1, item2, ..., item n]
   
   orb_hp = [1, 31, 3]
-  orb_mp = [1, 32, 5]
+  #orb_mp = [1, 32, 5]
   #orb_hp_mp = [1, 33, 8]
   jin = [1, 37, 5]
   jin_plus = [1, 38, 7]
   #jin_plus_plus = [1, 39, 9]
-  flecha = [1, 35, 4]
-  bomba = [1, 36, 5]
-  madera = [1, 14, 6]
+  flechas = [1, 13, 2]
+  bomba = [1, 36, 4]
+  madera = [1, 14, 5]
 
-  DEFAULT_DROP_ITEMS = [orb_hp, orb_mp, jin, jin_plus, flecha, madera, bomba]
+  DEFAULT_DROP_ITEMS = [orb_hp, jin, jin_plus, flechas, madera, bomba]
   
 end
 
