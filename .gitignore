@@ -6,4 +6,7 @@ Folders.dll
 *.rar
 *.zip
 
+/*.rvdata
+/*.png
+
 Backup_Data/

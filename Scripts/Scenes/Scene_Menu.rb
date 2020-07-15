@@ -90,8 +90,8 @@ class Scene_Menu < Scene_Base
         $scene = Scene_Item.new
       when 1,2,3  # Skill, equipment, status
         start_actor_selection
-      when 4      # Party
-        $scene = Scene_Party.new
+      when 4      # Save
+        $scene = Scene_File.new(true, false, false)
       when 5      # End Game
         $scene = Scene_End.new
       end

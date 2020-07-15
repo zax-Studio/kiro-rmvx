@@ -56,7 +56,7 @@ module Wora_NSS
   DRAW_PLAYTIME = true # Draw Playtime
   DRAW_LOCATION = true # Draw location
   DRAW_FACE = true # Draw Actor's face
-  DRAW_LEVEL = true # Draw Actor's level
+  DRAW_LEVEL = false # Draw Actor's level
   DRAW_NAME = true # Draw Actor's name
   
   PLAYTIME_TEXT = 'Tiempo de juego: '
@@ -126,7 +126,11 @@ class Scene_File < Scene_Base
     @help_window = Window_Help.new
     command = []
     (1..MAX_SAVE_SLOT).each do |i|
-      command << SLOT_NAME.clone.gsub!(/\{ID\}/i) { i.to_s }
+      if i == 1
+        command << "AUTO GUARDADO"
+      else
+        command << SLOT_NAME.clone.gsub!(/\{ID\}/i) { (i - 1).to_s }
+      end
     end
     @window_slotdetail = Window_NSS_SlotDetail.new
     @window_slotlist = Window_SlotList.new(160, command)

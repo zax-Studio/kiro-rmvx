@@ -10,11 +10,11 @@
 #_______________________________________________________________________________
 module MOG
   #Font Name.
-  MPFONT = "Press Start 2P"
+  MPFONT = "Calling Code"
   #Fade ON/OFF(True - False).
   MPNMFD = true
   #Fade Time.
-  MPNMTM = 12
+  MPNMTM = 16
   #Window Position.
   # 0 = Upper Left.
   # 1 = Lower Left.
@@ -92,7 +92,7 @@ class Window_Base < Window
   end
 
   def draw_mpname(x, y)
-    mapic = Cache.system("untitled3") rescue nd_mapic
+    mapic = Cache.system("mapnamebg") rescue nd_mapic
     cw = mapic.width
     ch = mapic.height
     src_rect = Rect.new(0, 0, cw, ch)
@@ -103,7 +103,7 @@ class Window_Base < Window
     self.contents.font.bold = true
     self.contents.font.shadow = false
     self.contents.font.color = Color.new(0, 0, 0, 255)
-    self.contents.draw_text(x + 77, y + 27, 110, 32, $MapName, 1)
+    self.contents.draw_text(x + 74, y + 26, 110, 32, $MapName, 1)
     self.contents.font.color = Color.new(255, 255, 255, 255)
     self.contents.draw_text(x + 75, y + 25, 110, 32, $MapName, 1)
     $MapName = nil
