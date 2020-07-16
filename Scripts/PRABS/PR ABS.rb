@@ -3412,7 +3412,7 @@ class Game_Event < Game_Character
       if @weapon_hittable
         $game_self_switches[[@map_id, @id, "HIT"]] = true
         $game_self_switches[[@map_id, @id, "WHIT"]] = true
-        $game_self_switches[[@map_id, @id, "IHIT_ID"]] = (left_handed ? attacker.battler.armor1_id : attacker.battler.weapon_id)
+        $game_self_switches[[@map_id, @id, "WHIT_ID"]] = (left_handed ? attacker.battler.armor1_id : attacker.battler.weapon_id)
         self.refresh
         self.start
       end
@@ -3521,6 +3521,7 @@ class Game_Event < Game_Character
     super()
     @battler = nil
     $game_self_switches[[@map_id, @id, "DEAD"]] = true
+
     if (@dead_variables.size > 0 || @dead_switches.size > 0)
       for variable in @dead_variables
         $game_variables[variable] += 1

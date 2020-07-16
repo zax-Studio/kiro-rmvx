@@ -71,5 +71,7 @@ module PRABS::CONFIG::DATABASE
   
   CATCH_AND_USE_ITEMS[39] = true
   
+  # Flechas
+  CATCH_AND_USE_ITEMS[13] = true
 
 end

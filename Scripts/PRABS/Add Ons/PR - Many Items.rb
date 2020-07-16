@@ -26,14 +26,15 @@ module PRManyItems
   orb_hp = [1, 31, 3]
   #orb_mp = [1, 32, 5]
   #orb_hp_mp = [1, 33, 8]
-  jin = [1, 37, 5]
-  jin_plus = [1, 38, 7]
+  #jin = [1, 37, 5]
+  jin_plus = [1, 38, 6]
   #jin_plus_plus = [1, 39, 9]
-  flechas = [1, 13, 2]
-  bomba = [1, 36, 4]
+  flechas = [1, 13, 3]
+  bomba = [1, 36, 6]
   madera = [1, 14, 5]
+  reanimador = [1, 5, 5]
 
-  DEFAULT_DROP_ITEMS = [orb_hp, jin, jin_plus, flechas, madera, bomba]
+  DEFAULT_DROP_ITEMS = [orb_hp, jin_plus, flechas, madera, bomba, reanimador]
   
 end
 
