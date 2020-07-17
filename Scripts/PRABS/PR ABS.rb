@@ -1892,9 +1892,10 @@ class ABS_Event < Game_Event
   def hit_target(s, target)
     if (@type == 0)
       if (target.direction == (10 - @direction))
-        if target.player_attacker?
-          reflect = PRABS::CONFIG::DATABASE::REFLECT_SHIELDS[target.battler.armor1_id].include?(1)
-          reflect |= PRABS::CONFIG::DATABASE::REFLECT_SHIELDS[target.battler.armor1_id].include?(@type_id)
+        reflect_shield = PRABS::CONFIG::DATABASE::REFLECT_SHIELDS[target.battler.armor1_id]
+        if target.player_attacker? && !reflect_shield.nil?
+          reflect = reflect_shield.include?(1) 
+          reflect |= reflect_shield.include?(@type_id)
           if (target.shielded && reflect)
             set_direction(10 - @direction)
             @x = (@real_x / 256.0).round

@@ -30,7 +30,7 @@ module PRManyItems
   jin_plus = [1, 38, 6]
   #jin_plus_plus = [1, 39, 9]
   flechas = [1, 13, 3]
-  bomba = [1, 36, 6]
+  bomba = [1, 36, 7]
   madera = [1, 14, 5]
   reanimador = [1, 5, 5]
 

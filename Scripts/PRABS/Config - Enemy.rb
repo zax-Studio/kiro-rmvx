@@ -30,6 +30,6 @@ module PRABS::CONFIG::ENEMY
 #==============================================================================
   
 # Attack
-self.setup_attack_enemy_animation(11, 0, "Attack", 84)
+#self.setup_attack_enemy_animation(11, 0, "Attack", 84)
 
 end

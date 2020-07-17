@@ -356,7 +356,7 @@ class Game_Party
   end
 
   def update
-    if (Input.trigger?(SWITCH_PLAYER))
+    if (Input.trigger?(SWITCH_PLAYER) && !$game_switches[HIDE_CATERPILLAR])
       switch_to_next_member()
     elsif (Input.trigger?(TOGGLE_CATERPILLAR) || $game_switches[FOLLOW_LEADER_SWITCH])  
       toggle_group()

@@ -157,7 +157,7 @@ class Game_Party
   # * Constants
   #--------------------------------------------------------------------------
   MAX_SIZE = 4
-  CATERPILLAR = 149
+  HIDE_CATERPILLAR = 40
   #--------------------------------------------------------------------------
   # * Public Instance Variables
   #--------------------------------------------------------------------------
@@ -177,7 +177,7 @@ class Game_Party
   # * Update Followers
   #--------------------------------------------------------------------------
   def update_followers
-    flag = $game_player.transparent || $game_switches[CATERPILLAR]
+    flag = $game_player.transparent || $game_switches[HIDE_CATERPILLAR]
     @followers.each_with_index do |char, i|
       char.actor = @actors[i + 1]
       next if i >= @actors.length - 1
@@ -297,6 +297,7 @@ class Game_MoveListElement
 end
 
 class Game_Player
+  AUTOSAVE_SWITCH = 63
   #--------------------------------------------------------------------------
   # * Public Instance Variables
   #--------------------------------------------------------------------------
@@ -321,7 +322,7 @@ class Game_Player
     $game_party.moveto_party(x, y)
     trick_caterpillar_player_moveto(x, y)
 
-    if $game_switches[63]
+    if $game_switches[AUTOSAVE_SWITCH]
       $save.do(1);
     end
   end
