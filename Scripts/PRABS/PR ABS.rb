@@ -3015,6 +3015,7 @@ end
 #==============================================================================
 
 class Game_Event < Game_Character
+  include PRABS::CONFIG::ANIMATION
 
   attr_reader :jumpable
   
@@ -3773,6 +3774,7 @@ class Game_Event < Game_Character
     return if skills.size <= 0
     skill = $data_skills[skills[rand(skills.size)]]
     return if skill.nil?
+    delay = DELAY
     if (skill.for_user? || skill.for_friend?)
       self.suffer_skill(self, skill, delay)
     elsif skill.for_opponent?
@@ -4250,6 +4252,10 @@ class Game_Player < Game_Character
   # ● Ataque da mão esquerda
   #--------------------------------------------------------------------------
 
+  def attack_animation(left_handed, x, y)
+    $game_map.setup_map_animation((left_handed ? @battler.atk_animation_id2 : @battler.atk_animation_id), x, y, @direction)
+  end
+
   def cast_sequence(sequence, left_handed = false)
     if sequence[5].is_a?(String)
       return false unless ($game_system.sequence_switches[sequence[5]] == true)
@@ -4263,7 +4269,7 @@ class Game_Player < Game_Character
       @abs_wait ||= 0
       front_x = $game_map.x_with_direction(@x, @direction)
       front_y = $game_map.y_with_direction(@y, @direction)
-      $game_map.setup_map_animation((left_handed ? @battler.atk_animation_id2 : @battler.atk_animation_id), front_x, front_y, @direction)
+      attack_animation(left_handed, front_x, front_y)
       for event in $game_map.screen_events_xy(front_x, front_y)
         @hitted |= event.suffer_attack(self, delay, left_handed) if event.weapon_hittable?
       end
