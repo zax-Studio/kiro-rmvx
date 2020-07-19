@@ -51,7 +51,9 @@ module PRABS::CONFIG::DATABASE
   # Bomb - Damage
   SKILLS[89] = [0, 4, RED, ""]
   # Impacto Frio
-  SKILLS[64] = [0, 6, RED, ""]
+  SKILLS[64] = [0, 4, RED, ""]
+  # Llamarada Letal
+  SKILLS[60] = [0, 3, RED, "", [36, 1, true]]
 
   # FireBall - Passable
   SKILLS[90] = [64, 5, SHOOT, ""]
