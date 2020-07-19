@@ -23,13 +23,13 @@ module PRManyItems
   #          100 - 1     % (1/100)
   # DATA[enemy ID] = [item1, item2, ..., item n]
   
-  orb_hp = [1, 31, 3]
+  orb_hp = [1, 31, 2]
   #orb_mp = [1, 32, 5]
   #orb_hp_mp = [1, 33, 8]
   #jin = [1, 37, 5]
-  jin_plus = [1, 38, 6]
+  jin_plus = [1, 38, 5]
   #jin_plus_plus = [1, 39, 9]
-  flechas = [1, 13, 3]
+  flechas = [1, 13, 2]
   bomba = [1, 36, 7]
   madera = [1, 14, 5]
   reanimador = [1, 5, 5]
