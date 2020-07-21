@@ -27,7 +27,7 @@ module PRManyItems
   #orb_mp = [1, 32, 5]
   #orb_hp_mp = [1, 33, 8]
   #jin = [1, 37, 5]
-  jin_plus = [1, 38, 5]
+  jin_plus = [1, 38, 4]
   #jin_plus_plus = [1, 39, 9]
   flechas = [1, 13, 2]
   bomba = [1, 36, 7]

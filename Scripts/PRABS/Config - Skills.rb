@@ -55,7 +55,7 @@ module PRABS::CONFIG::DATABASE
   # Llamarada Letal
   SKILLS[60] = [0, 3, RED, "", [36, 1, true]]
 
-  # FireBall - Passable
-  SKILLS[90] = [64, 5, SHOOT, ""]
+  # Láser Ancestral
+  SKILLS[58] = [64, 5, SHOOT, "", [41, 1, false], 44]
 
 end
