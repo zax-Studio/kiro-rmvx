@@ -4762,6 +4762,7 @@ class Game_Map
   #--------------------------------------------------------------------------
   
   def tile_waters?(tile_id)
+    return true if tile_id = 1596 # this is not a real water tile, but a patch for the dungeon 5
     return false if (tile_id < 2048 || tile_id >= 2768)
     return true if tile_id >= 2048 && tile_id < 2096
     return true if tile_id >= 2240 && tile_id < 2288

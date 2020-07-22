@@ -184,10 +184,14 @@ data = [
   [SEQUENCES["fa"], 84, "Pickaxe", 0, false]
 ]
 
-# Kiro + Pico
+# Pico
 PRABS::HERO.add_sequence(9, 33, 0, data)
+PRABS::HERO.add_sequence(1, 33, 0, data)
+PRABS::HERO.add_sequence(2, 33, 0, data)
 
 # Max combo para Pico
 PRABS::HERO.set_combo_max(9, 33, 1, 20)
+PRABS::HERO.set_combo_max(1, 33, 1, 20)
+PRABS::HERO.set_combo_max(2, 33, 1, 20)
   
 end
