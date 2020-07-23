@@ -24,12 +24,15 @@
 #==============================================================================
 
 module PRABS::CONFIG::ENEMY
-  
-#==============================================================================
-# Enemy 1
-#==============================================================================
-  
-# Attack
-#self.setup_attack_enemy_animation(11, 0, "Attack", 84)
 
+    DEFAULT_ANIMATION_ATTACK_ID = 84
+  
+    # Wasp - 3
+    self.setup_attack_enemy_animation(3, 0, "", 92)
+
+    # Bat - ID 2
+    self.setup_attack_enemy_animation(2, 0, "", 93)
+
+    # Valorias - ID 49, 50
+    self.setup_attack_enemy_animation([49, 50], 0, "", 95)
 end

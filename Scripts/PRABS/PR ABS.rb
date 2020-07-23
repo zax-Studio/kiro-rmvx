@@ -886,6 +886,8 @@ module PRABS
       ENEMIES_ATTACK = {}
       SKILL_ENEMIES = {}
       COMBO_ENEMIES = {}
+
+      DEFAULT_ANIMATION_ATTACK_ID = 0
       
       def self.get_animation_attack(enemy_id, combo_index)
         anim = ENEMIES[[enemy_id, combo_index]]
@@ -897,13 +899,19 @@ module PRABS
       def self.get_animation_attack_id(enemy_id, combo_index)
         anim = ENEMIES_ATTACK[[enemy_id, combo_index]]
         anim ||= ENEMIES_ATTACK[[enemy_id, 0]]
-        anim ||= 0
+        anim ||= DEFAULT_ANIMATION_ATTACK_ID
         return anim
       end
       
       def self.setup_attack_enemy_animation(enemy_id, combo_index, animation_name, animation_id)
-        ENEMIES[[enemy_id, combo_index]] = animation_name.dup
-        ENEMIES_ATTACK[[enemy_id, combo_index]] = animation_id
+        if (enemy_id.is_a?(Array))
+          for id in enemy_id
+            self.setup_attack_enemy_animation(id, combo_index, animation_name, animation_id)
+          end
+        else
+          ENEMIES[[enemy_id, combo_index]] = animation_name.dup
+          ENEMIES_ATTACK[[enemy_id, combo_index]] = animation_id
+        end
       end
       
       def self.setup_attack_combo_max(enemy_id, combo_max)
