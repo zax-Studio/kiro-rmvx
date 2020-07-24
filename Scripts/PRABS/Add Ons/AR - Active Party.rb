@@ -347,6 +347,7 @@ class Game_Party
   
   alias_method :abs_party_remove_actor, :remove_actor
   def remove_actor(actor_id)
+    switch_to_next_member if actor_id == get_front_actor_id
     abs_party_remove_actor(actor_id)
     update_orig_party_order()
   end
@@ -368,6 +369,7 @@ class Game_Party
   end
 
   def switch_to_next_member
+    return if @actors.length < 2
     current_member_id = get_front_actor_id()
     orig_index = @orig_party_order.index(current_member_id)
     next_orig_index = orig_index

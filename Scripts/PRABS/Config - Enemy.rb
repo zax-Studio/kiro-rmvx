@@ -35,4 +35,10 @@ module PRABS::CONFIG::ENEMY
 
     # Valorias - ID 49, 50
     self.setup_attack_enemy_animation([49, 50], 0, "", 95)
+
+    # Ice - ID 40
+    self.setup_attack_enemy_animation([40], 0, "", 97)
+
+    # Bosses - ID 33,36,37,38,39,52
+    self.setup_attack_enemy_animation([33,36,37,38,39,52], 0, "", 96)
 end
