@@ -4336,7 +4336,6 @@ class Game_Player < Game_Character
     super()
     if $game_party.abs_all_dead?
       $game_temp.next_scene = "gameover"
-      $game_party.death_count += 1
     else
       $game_party.switch_to_next_member
     end

@@ -26,10 +26,12 @@ class Scene_Gameover < Scene_Base
     create_gameover_graphic
     check_continue
     create_game_over_window
+    @gold_window = Window_Gold.new(384, 0)
   end
   
   def update
     super
+    @gold_window.update
     @command_window.update
     if Input.trigger?(Input::C)
       case @command_window.index
@@ -46,6 +48,7 @@ class Scene_Gameover < Scene_Base
   
   def terminate
     super
+    @gold_window.dispose
     dispose_command_window
     snapshot_for_background
     dispose_title_graphic

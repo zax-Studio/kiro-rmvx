@@ -164,7 +164,8 @@ class Game_Follower < Game_Character
       end
       dx = (@x - enemy.character.x).abs
       dy = (@y - enemy.character.y).abs
-      offset_x = PRABS::HERO.get_sequence(@battler.id, @battler.weapon_id, 0)[0][5]
+      sequence = PRABS::HERO.get_sequence(@battler.id, @battler.weapon_id, 0)[0]
+      offset_x = sequence.nil? ? nil : sequence[5]
       if dx <= 1 + (offset_x.nil? ? 0 : offset_x) && dy <= 1
         target_attack(enemy, @follower_combo[2])
         if (rand(@combo_max * 2) <= (@combo_max - @follower_combo[2] + 1) && @follower_combo[2] < @combo_max)
@@ -198,7 +199,8 @@ class Game_Follower < Game_Character
   def update_automove
     @enemy_on_sight = @abs_target.distance <= @automove_sight
     if @enemy_on_sight
-      offset = PRABS::HERO.get_sequence(@battler.id, @battler.weapon_id, 0)[0][5]
+      sequence = PRABS::HERO.get_sequence(@battler.id, @battler.weapon_id, 0)[0]
+      offset = sequence.nil? ? nil : sequence[5]
       if offset.nil?
         move_toward_character(@abs_target.character)
       else
@@ -225,7 +227,8 @@ class Game_Follower < Game_Character
     @is_fighting = true
     dx = (@x - char.x).abs
     dy = (@y - char.y).abs
-    offset_x = PRABS::HERO.get_sequence(@battler.id, @battler.weapon_id, 0)[0][5]
+    sequence = PRABS::HERO.get_sequence(@battler.id, @battler.weapon_id, 0)[0]
+    offset_x = sequence.nil? ? nil : sequence[5]
     if dx <= 1 + (offset_x.nil? ? 0 : offset_x) && dy <= 1
       target_attack(char, @follower_combo[2])
       @abs_wait = 40
@@ -339,7 +342,6 @@ class Game_Party
   include PRABS::CONFIG::BUTTONS
 
   attr_reader :following_leader
-  attr_accessor :death_count
 
   alias_method :abs_party_initialize, :initialize
   def initialize
@@ -351,7 +353,6 @@ class Game_Party
     @regroup_on_next_move_flag = false
     @refollow_on_next_move_flag = false
     @following_leader = true
-    @death_count = 0
   end
 
   alias_method :abs_party_setup_starting_members, :setup_starting_members
@@ -470,6 +471,8 @@ class Game_Party
   end
 
   def regroup
+    @regroup_on_next_move_flag = false
+    @refollow_on_next_move_flag = false
     moveto_party($game_player.x, $game_player.y, true, false, false)
   end
 
