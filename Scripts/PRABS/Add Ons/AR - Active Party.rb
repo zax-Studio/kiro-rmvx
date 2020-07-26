@@ -88,6 +88,7 @@ class Game_Follower < Game_Character
   
   attr_reader   :is_inline
   attr_reader   :is_walking
+  attr_reader   :is_fighting
   
   def initialize
     @is_inline = true
@@ -132,16 +133,16 @@ class Game_Follower < Game_Character
       update_automove
     end
     if !@attacked_by.nil?
-      if @attacked_by.dead?
+      if @attacked_by.battler.nil? || @attacked_by.dead?
         @attacked_by = nil
-      else
+      elsif !@is_fighting
         move_toward_character(@attacked_by)
         @is_fighting = true
       end
     elsif @is_inline && !$game_player.attacked_by.nil?
       if $game_player.attacked_by.battler.nil? || $game_player.attacked_by.dead?
         $game_player.attacked_by = nil
-      else
+      elsif !@is_fighting
         move_toward_character($game_player.attacked_by)
         @is_fighting = true
       end

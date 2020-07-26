@@ -223,7 +223,7 @@ class Game_Party
         @move_list[i...@move_list.size] = nil
         next
       end
-      next if !follower.is_inline || follower.is_walking
+      next if !follower.is_inline || follower.is_walking || follower.is_fighting
       case @move_list[i].type
       when 2
         follower.move_down(*@move_list[i].args)

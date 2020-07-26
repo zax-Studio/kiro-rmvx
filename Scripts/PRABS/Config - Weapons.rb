@@ -132,13 +132,18 @@ module PRABS::SEQUENCE
 #===============================================================================
 
   data = [
-    [SEQUENCES["a"], 88, "Arco", 0, false, 3] # F: Offset of distance to attack
+    [SEQUENCES["a"], 88, "Arco", 0, false, 2] # F: Offset of distance to attack
   ]
 
   # Setting these sequences to hero 1, weapon 2, combo 0 (all combos)
   # Arma de Nick
   PRABS::HERO.add_sequence(1, 4, 0, data)
   PRABS::HERO.add_sequence(1, 11, 0, data)
+
+  data = [
+    [SEQUENCES["a"], 88, "Arco", 0, false, 3] # F: Offset of distance to attack
+  ]
+
   PRABS::HERO.add_sequence(1, 17, 0, data)
   PRABS::HERO.add_sequence(1, 24, 0, data)
 

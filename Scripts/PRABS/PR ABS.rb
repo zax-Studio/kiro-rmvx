@@ -3746,7 +3746,7 @@ class Game_Event < Game_Character
       abs_targets = ABS_Targets.new
       abs_targets.push(ABS_Target.new($game_player, get_dist($game_player)))
       $game_party.followers.each do |char|
-        if char.battler != nil
+        if char.battler != nil && char.actor != nil
           abs_targets.push(ABS_Target.new(char, get_dist(char)))
         end
       end
