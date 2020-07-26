@@ -132,7 +132,7 @@ module PRABS::SEQUENCE
 #===============================================================================
 
   data = [
-    [SEQUENCES["a"], 88, "Arco", 0, false]
+    [SEQUENCES["a"], 88, "Arco", 0, false, 3] # F: Offset of distance to attack
   ]
 
   # Setting these sequences to hero 1, weapon 2, combo 0 (all combos)
@@ -181,7 +181,7 @@ data = [
   # Normal Attack, Image "Graphics/Characters/CharName + Pickaxe", delay 0, Continue the combo
   [SEQUENCES["a"], 0, "Pickaxe", 0, false],
   # Front + Attack Button, Image "Graphics/Characters/CharName + Pickaxe", delay 0, Continue the combo
-  [SEQUENCES["fa"], 84, "Pickaxe", 0, false]
+  [SEQUENCES["fa"], 0, "Pickaxe", 0, false]
 ]
 
 # Pico

@@ -55,6 +55,16 @@ class Game_Character
     @real_x = $game_player.real_x
     @real_y = $game_player.real_y - 256
   end
+
+  def turn_toward_char(character)
+    sx = distance_x_from_char(character)
+    sy = distance_y_from_char(character)
+    if sx.abs > sy.abs                    # Horizontal distance is longer
+      sx > 0 ? turn_left : turn_right
+    elsif sx.abs < sy.abs                 # Vertical distance is longer
+      sy > 0 ? turn_up : turn_down
+    end
+  end
 end
 
 class Game_Event < Game_Character
@@ -153,7 +163,8 @@ class Game_Follower < Game_Character
       end
       dx = (@x - enemy.character.x).abs
       dy = (@y - enemy.character.y).abs
-      if dx <= 1 && dy <= 1
+      offset_x = PRABS::HERO.get_sequence(@battler.id, @battler.weapon_id, 0)[0][5]
+      if dx <= 1 + (offset_x.nil? ? 0 : offset_x) && dy <= 1
         target_attack(enemy, @follower_combo[2])
         if (rand(@combo_max * 2) <= (@combo_max - @follower_combo[2] + 1) && @follower_combo[2] < @combo_max)
           @follower_combo[1] = rand(10) + 10
@@ -186,7 +197,13 @@ class Game_Follower < Game_Character
   def update_automove
     @enemy_on_sight = @abs_target.distance <= @automove_sight
     if @enemy_on_sight
-      move_toward_character(@abs_target.character)
+      offset = PRABS::HERO.get_sequence(@battler.id, @battler.weapon_id, 0)[0][5]
+      if offset.nil?
+        move_toward_character(@abs_target.character)
+      else
+        move_toward_character(@abs_target.character, false, offset)
+        turn_toward_char(@abs_target.character)
+      end
     elsif !@is_inline && $game_party.following_leader
       follow_leader
     end
@@ -207,7 +224,8 @@ class Game_Follower < Game_Character
     @is_fighting = true
     dx = (@x - char.x).abs
     dy = (@y - char.y).abs
-    if dx <= 1 && dy <= 1
+    offset_x = PRABS::HERO.get_sequence(@battler.id, @battler.weapon_id, 0)[0][5]
+    if dx <= 1 + (offset_x.nil? ? 0 : offset_x) && dy <= 1
       target_attack(char, @follower_combo[2])
       @abs_wait = 40
       if (rand(@combo_max * 2) <= @combo_max)
@@ -221,6 +239,7 @@ class Game_Follower < Game_Character
 
   def target_attack(target, combo_index)
     return if target.battler.nil?
+
     data = PRABS::HERO.get_sequence(@battler.id, @battler.weapon_id, combo_index)
     # Randomness of attack sequence (FrontAttack,Circle)
     sequence = data[rand(data.length)]
@@ -319,6 +338,7 @@ class Game_Party
   include PRABS::CONFIG::BUTTONS
 
   attr_reader :following_leader
+  attr_accessor :death_count
 
   alias_method :abs_party_initialize, :initialize
   def initialize
@@ -330,6 +350,7 @@ class Game_Party
     @regroup_on_next_move_flag = false
     @refollow_on_next_move_flag = false
     @following_leader = true
+    @death_count = 0
   end
 
   alias_method :abs_party_setup_starting_members, :setup_starting_members

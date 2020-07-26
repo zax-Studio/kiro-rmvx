@@ -2506,8 +2506,14 @@ class Game_Character
     end
   end
 
-  def move_toward_character(char, force_movement = false)
-    sx = distance_x_from_char(char)
+  def move_toward_character(char, force_movement = false, offset_x = 0)
+    if offset_x == 0
+      sx = distance_x_from_char(char)
+    else
+      sx_from_up = distance_x_from_target(char.x - offset_x)
+      sx_from_down = distance_x_from_target(char.x + offset_x)
+      sx = sx_from_up.abs < sx_from_down.abs ? sx_from_up : sx_from_down
+    end
     sy = distance_y_from_char(char)
     if sx != 0 or sy != 0
       walkto(sx, sy, force_movement)
@@ -4281,10 +4287,8 @@ class Game_Player < Game_Character
       for event in $game_map.screen_events_xy(front_x, front_y)
         @hitted |= event.suffer_attack(self, delay, left_handed) if event.weapon_hittable?
       end
-      if @battler.weapon_id == 33 # Pickaxe
-        if $game_map.tall_ground?(front_x, front_y)
-          pickaxe_tall_ground(front_x, front_y)
-        end
+      if @battler.weapon_id == 33 && $game_map.tall_ground?(front_x, front_y) # Pickaxe ID 33
+        pickaxe_tall_ground(front_x, front_y)
       end
       return
     elsif (sequence[1] < 0)
@@ -4332,6 +4336,7 @@ class Game_Player < Game_Character
     super()
     if $game_party.abs_all_dead?
       $game_temp.next_scene = "gameover"
+      $game_party.death_count += 1
     else
       $game_party.switch_to_next_member
     end
