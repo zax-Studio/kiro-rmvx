@@ -70,10 +70,10 @@ class Wora_Map_Credit
 Credit= <<_MAP_CREDIT_
 
 <h>Historia
-Andres Rafael Rondon Diplan
+Andrés Rondón
 
 <h>Graficos
-Andres Rondon
+Andrés Rondón
 Delio Diaz
 RTP VX
 RTP XP
@@ -81,7 +81,7 @@ Hobinicus - Pantalla de Titulo
 Techie de rpgmakervx.net – Pantalla de “GameOver”
 
 <h>Mapeo
-Andres Rondon
+Andrés Rondón
 
 <h>Scrips
 PRABS

@@ -4867,7 +4867,14 @@ class Game_Interpreter
   end
   
   def hit_skill?(skill_id)
-    return ($game_self_switches.data[[@map_id, @event_id, "SHIT_ID"]] == skill_id)
+    if (skill_id.is_a?(Array))
+      for id in skill_id
+        return true if hit_skill?(id)
+      end
+      return false
+    else
+      return ($game_self_switches.data[[@map_id, @event_id, "SHIT_ID"]] == skill_id)
+    end
   end
   
   def learn_sequence(name)

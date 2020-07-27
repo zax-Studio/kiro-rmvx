@@ -50,7 +50,7 @@ module PRABS::CONFIG::DATABASE
   SKILLS[92] = [0, 5, RED, ""]
 
   # Láser Ancestral
-  SKILLS[58] = [64, 5, SHOOT, "", [41, 1, false], 44]
+  SKILLS[58] = [64, 5, SHOOT, "", nil, 44]
   # FireBall
   SKILLS[87] = [64, 2, SHOOT, ""]
   # Arrow
