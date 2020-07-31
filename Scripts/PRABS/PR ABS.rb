@@ -142,9 +142,14 @@ module Input
   # * Métodos da DLL
   #-------------------------------------------------------------------------- 
   
-  ROUTE = "PRABS.dll" # DLL to C
-  #ROUTE = "DLL\\PRABS.dll" # original
-  UPDATE = Win32API.new(ROUTE, "UpdateInputArray", "lllll", "")
+  ROUTE = "DLL\\PRABS.dll" # original
+  ROUTE_NEW = "PRABS.dll" # DLL to C
+  begin
+    UPDATE = Win32API.new(ROUTE, "UpdateInputArray", "lllll", "")
+  rescue
+    ROUTE = ROUTE_NEW
+    UPDATE = Win32API.new(ROUTE, "UpdateInputArray", "lllll", "")    
+  end
   ADDKEY = Win32API.new(ROUTE, "InputAddUsedKey", "i", "")
 
   #--------------------------------------------------------------------------
