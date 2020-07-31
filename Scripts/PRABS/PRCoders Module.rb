@@ -776,9 +776,6 @@ end
 module RTP
   
   RTP_PATHS = []
-  Win32::Registry.open(Win32::Registry::HKEY_LOCAL_MACHINE, "SOFTWARE\\Enterbrain\\RGSS2\\RTP") {|key|
-    RTP_PATHS.push(key.read_s(PRCoders.game_rtp))
-  }
   
   def self.paths
     return RTP_PATHS
