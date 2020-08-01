@@ -3932,11 +3932,6 @@ class Game_Player < Game_Character
       y_plus < 0 ? turn_up : turn_down
     end
     
-    # if (@direction == 6) || (@direction == 4)
-    #   @angle_target = -360 * x_plus
-    #   @angle_duration = 24
-    # end
-    
     if jumpable?(@x + x_plus, @y + y_plus)
       x_plus *= 2
       y_plus *= 2
@@ -4779,7 +4774,7 @@ class Game_Map
   #--------------------------------------------------------------------------
   
   def tile_waters?(tile_id)
-    return true if tile_id = 1596 # this is not a real water tile, but a patch for the dungeon 5
+    return true if tile_id == 1596 # this is not a real water tile, but a patch for the dungeon 5
     return false if (tile_id < 2048 || tile_id >= 2768)
     return true if tile_id >= 2048 && tile_id < 2096
     return true if tile_id >= 2240 && tile_id < 2288

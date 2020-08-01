@@ -108,13 +108,18 @@ end
 #===============================================================================
 
 class SpriteEquipHotkey < Sprite
+
+  attr_accessor :countable
   
+  ARROWS_ITEM_ID = 35
+
   #-----------------------------------------------------------------------------
   # Inicialização
   #-----------------------------------------------------------------------------
 
-  def initialize(viewport=nil)
+  def initialize(viewport = nil, countable = false)
     super(viewport)
+    @countable = countable
     self.bitmap = Bitmap.new(27, 27)
     self.bitmap.font.size = 12
     @icon_index = 0
@@ -155,6 +160,14 @@ class SpriteEquipHotkey < Sprite
   #-----------------------------------------------------------------------------
 
   def update
+    if (@countable)
+      item_number = $game_party.item_number($data_items[ARROWS_ITEM_ID])
+      text = item_number.to_s
+      size = self.bitmap.text_size(text)
+      size.x = 27 - size.width
+      size.y = 27 - size.height
+      self.bitmap.draw_text(size, text, 1)
+    end
   end
   
 end
@@ -164,6 +177,8 @@ end
 #===============================================================================
 
 class SpriteHotkeys < Sprite
+
+  BOWS = [4, 11, 17, 24]
   
   #-----------------------------------------------------------------------------
   # Inicialização
@@ -272,9 +287,15 @@ class SpriteHotkeys < Sprite
       icon.update
     end
     @weapon_icons[0].icon_index = ($data_weapons[$game_party.members[0].weapon_id].nil? ? -1 : $data_weapons[$game_party.members[0].weapon_id].icon_index)
-    if ($game_party.members[0].two_swords_style)
+    if (!BOWS.index($game_party.members[0].weapon_id).nil?) # if it's one of the bows, display arrows
+      @weapon_icons[1].countable = true
+      @weapon_icons[1].icon_index = 181 # icon index of Arrows.
+      @weapon_icons[1].update
+    elsif ($game_party.members[0].two_swords_style)
+      @weapon_icons[1].countable = false
       @weapon_icons[1].icon_index = ($data_weapons[$game_party.members[0].armor1_id].nil? ? -1 : $data_weapons[$game_party.members[0].armor1_id].icon_index)
     else
+      @weapon_icons[1].countable = false
       @weapon_icons[1].icon_index = ($data_armors[$game_party.members[0].armor1_id].nil? ? -1 : $data_armors[$game_party.members[0].armor1_id].icon_index)
     end
   end
