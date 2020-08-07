@@ -6,6 +6,8 @@ class Game_Actor < Game_Battler
 end
 
 class Game_Character
+  attr_reader   :is_walking
+
   def copy_from(character)
     # From RGSS2
     @id = character.id
@@ -87,7 +89,6 @@ class Game_Follower < Game_Character
   include PRABS::CONFIG::ANIMATION
   
   attr_reader   :is_inline
-  attr_reader   :is_walking
   attr_reader   :is_fighting
   
   def initialize
@@ -114,7 +115,7 @@ class Game_Follower < Game_Character
     if @is_fighting
       update_get_abs_target
     end
-    unless @abs_target.nil?
+    unless @abs_target.character.nil?
       return if follower_attack()
     end
     return if self.moving?
@@ -149,8 +150,7 @@ class Game_Follower < Game_Character
     end
   end
 
-  def follower_attack()
-    return false if @abs_target.character.nil?
+  def follower_attack
     enemy =  @abs_target.character
     if enemy.battler.nil?
       @is_fighting = false
@@ -207,7 +207,7 @@ class Game_Follower < Game_Character
         move_toward_character(@abs_target.character, false, offset)
         turn_toward_char(@abs_target.character)
       end
-    elsif $game_party.following_leader && !@is_inline
+    elsif $game_party.following_leader && (!@is_inline || @is_fighting)
       follow_leader
     end
   end
@@ -221,8 +221,8 @@ class Game_Follower < Game_Character
   end
 
   def use_autoattack(char)
-    if char.nil?
-      if $game_party.following_leader && !@is_inline
+    if char.nil? || char.battler.nil? || char.dead?
+      if $game_party.following_leader
         follow_leader
       end
       return
@@ -274,6 +274,7 @@ class Game_Follower < Game_Character
     @opacity = 0
     @battler = nil
     @attacked_by = nil
+    @is_walking = false
     $game_map.need_refresh = true
   end
 
@@ -293,7 +294,7 @@ class Game_Follower < Game_Character
     moves_finished = follow_line($game_player.x, $game_player.y, true, true, number_in_line)
     if moves_finished > 0
       set_follow_line_variables()
-      $game_party.duplicate_previous_move(number_in_line)
+      $game_party.queue_follower_move(number_in_line - 1)
     end
   end
 
@@ -314,17 +315,15 @@ class Game_Follower < Game_Character
       end
       unless walk || @battler.nil?
         set_direction(direction)
-        @appear = true unless @battler.dead?
+        @appear = true unless @battler.dead? || $game_party.disable_appear_flag
       end
     end
     if walk
       sx = distance_x_from_target(nx)
       sy = distance_y_from_target(ny)
-      if sx != 0 || sy != 0
-        @is_walking = true
-        walkto(sx, sy)
-      else
-        @is_walking = false
+      walkto(sx, sy)
+      if !@is_walking
+        moveto(nx, ny) if @move_failed
         set_direction(direction)
         moves_finished = 1
       end
@@ -333,6 +332,11 @@ class Game_Follower < Game_Character
       moves_finished = 1
     end
     return moves_finished
+  end
+
+  def passable?(x, y)
+    return true if @is_inline && !@is_fighting && !@is_walking
+    super
   end
 end
 

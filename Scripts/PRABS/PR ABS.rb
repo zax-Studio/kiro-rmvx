@@ -2480,35 +2480,41 @@ class Game_Character
   #--------------------------------------------------------------------------
   
   def walkto(sx, sy, force_movement = false)
-    if sx.abs > sy.abs                  # 横の距離のほうが長い
-      sx > 0 ? move_left : move_right   # 左右方向を優先
-      if @move_failed
-        if sy != 0
-          sy > 0 ? move_up : move_down
-          if @move_failed && force_movement
+    if sx != 0 || sy != 0
+      @is_walking = true
+      if sx.abs > sy.abs                  # 横の距離のほうが長い
+        sx > 0 ? move_left : move_right   # 左右方向を優先
+        if @move_failed
+          if sy != 0
+            sy > 0 ? move_up : move_down
+            if @move_failed && force_movement
+              abs_random_movement
+              @move_failed = true
+            end
+          elsif force_movement
             abs_random_movement
             @move_failed = true
           end
-        elsif force_movement
-          abs_random_movement
-          @move_failed = true
         end
-      end
-    else                                # 縦の距離のほうが長いか等しい
-      sy > 0 ? move_up : move_down      # 上下方向を優先
-      if @move_failed 
-        if sx != 0
-          sx > 0 ? move_left : move_right
-          if @move_failed && force_movement
+      else                                # 縦の距離のほうが長いか等しい
+        sy > 0 ? move_up : move_down      # 上下方向を優先
+        if @move_failed 
+          if sx != 0
+            sx > 0 ? move_left : move_right
+            if @move_failed && force_movement
+              abs_random_movement
+              @move_failed = true
+            end
+          elsif force_movement
             abs_random_movement
             @move_failed = true
           end
-        elsif force_movement
-          abs_random_movement
-          @move_failed = true
         end
       end
+      return unless @move_failed || (sx.abs + sy.abs) == 1
     end
+    
+    @is_walking = false
   end
 
   def move_toward_character(char, force_movement = false, offset_x = 0)
@@ -2520,9 +2526,8 @@ class Game_Character
       sx = sx_from_up.abs < sx_from_down.abs ? sx_from_up : sx_from_down
     end
     sy = distance_y_from_char(char)
-    if sx != 0 or sy != 0
-      walkto(sx, sy, force_movement)
-    end
+    
+    walkto(sx, sy, force_movement)
   end
 
   def abs_random_movement
