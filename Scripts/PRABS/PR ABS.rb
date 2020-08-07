@@ -2481,7 +2481,7 @@ class Game_Character
   
   def walkto(sx, sy, force_movement = false)
     if sx != 0 || sy != 0
-      @is_walking = true
+      @is_walking = !force_movement
       if sx.abs > sy.abs                  # 横の距離のほうが長い
         sx > 0 ? move_left : move_right   # 左右方向を優先
         if @move_failed

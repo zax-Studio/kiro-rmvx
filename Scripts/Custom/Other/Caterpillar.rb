@@ -181,16 +181,31 @@ class Game_Party
   #--------------------------------------------------------------------------
   def update_followers
     flag = $game_player.transparent || $game_switches[HIDE_CATERPILLAR]
-    @followers.each_with_index do |char, i|
-      char.actor = @actors[i + 1]
+    @followers.each_with_index do |follower, i|
+      follower.actor = @actors[i + 1]
       next if i >= @actors.length - 1
-      char.move_speed = $game_player.move_speed
+      follower.move_speed = $game_player.move_speed
       if $game_player.dash?
-        char.move_speed += 1
+        follower.move_speed += 1
       end
-      char.update
-      char.transparent = flag
+      follower.update
+      follower.transparent = flag
     end
+  end
+
+  def move_followers
+    @followers.reverse.each_with_index do |follower, i|
+      follower_index = @followers.length - 1 - i
+      chase_preceding_character(follower, follower_index)
+    end
+  end
+
+  def chase_preceding_character(follower, index)
+    return if !follower.is_inline || follower.is_fighting
+    preceding_character = index > 0 ? @followers[index - 1] : $game_player
+    sx = follower.distance_x_from_char(preceding_character)
+    sy = follower.distance_y_from_char(preceding_character)
+    follower.walkto(sx, sy, true)
   end
 
   #--------------------------------------------------------------------------
@@ -221,33 +236,39 @@ class Game_Party
   #--------------------------------------------------------------------------
   def move_party
     return unless @following_leader
-    @move_list.each_index do |i|
-      follower = @followers[i]
-      if follower == nil
-        @move_list[i...@move_list.size] = nil
-        next
+    @use_move_list = 0 if @use_move_list.nil?
+    if @use_move_list > 0
+      @move_list.each_index do |i|
+        follower = @followers[i]
+        if follower == nil
+          @move_list[i...@move_list.size] = nil
+          next
+        end
+        next if !follower.is_inline || follower.is_walking || follower.is_fighting
+        case @move_list[i].type
+        when 2
+          follower.move_down(*@move_list[i].args)
+        when 4
+          follower.move_left(*@move_list[i].args)
+        when 6
+          follower.move_right(*@move_list[i].args)
+        when 8
+          follower.move_up(*@move_list[i].args)
+        when 1
+          follower.move_lower_left
+        when 3
+          follower.move_lower_right
+        when 7
+          follower.move_upper_left
+        when 9
+          follower.move_upper_right
+        when 5
+          follower.jump(*@move_list[i].args)
+        end
       end
-      next if !follower.is_inline || follower.is_walking || follower.is_fighting
-      case @move_list[i].type
-      when 2
-        follower.move_down(*@move_list[i].args)
-      when 4
-        follower.move_left(*@move_list[i].args)
-      when 6
-        follower.move_right(*@move_list[i].args)
-      when 8
-        follower.move_up(*@move_list[i].args)
-      when 1
-        follower.move_lower_left
-      when 3
-        follower.move_lower_right
-      when 7
-        follower.move_upper_left
-      when 9
-        follower.move_upper_right
-      when 5
-        follower.jump(*@move_list[i].args)
-      end
+      @use_move_list -= 1
+    else
+      move_followers
     end
   end
 
@@ -278,6 +299,9 @@ class Game_Party
     end
     move_party
     @move_list.unshift(Game_MoveListElement.new(type, args))
+    if type == 5
+      @use_move_list = @actors.length - 1
+    end
   end
 
   def queue_follower_move(follower_index)

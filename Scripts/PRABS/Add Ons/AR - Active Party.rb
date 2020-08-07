@@ -113,7 +113,6 @@ class Game_Follower < Game_Character
       return
     end
     if @is_fighting
-      update_get_abs_target
     end
     unless @abs_target.character.nil?
       return if follower_attack()
@@ -122,6 +121,7 @@ class Game_Follower < Game_Character
     if @auto_wait > 0
       @auto_wait -= 1
     elsif @autoattack_type == 1
+      update_get_abs_target
       update_autoattack
       @autoattack_type = 0
       return
@@ -131,6 +131,7 @@ class Game_Follower < Game_Character
       end
     end
     if @automove
+      update_get_abs_target
       update_automove
     end
     if !@attacked_by.nil?
@@ -198,6 +199,7 @@ class Game_Follower < Game_Character
 
   def update_automove
     @enemy_on_sight = @abs_target.distance <= @automove_sight
+    print("#{@character_name} update_automove is_fighting: #{@is_fighting}")
     if @enemy_on_sight
       sequence = PRABS::HERO.get_sequence(@battler.id, @battler.weapon_id, 0)[0]
       offset = sequence.nil? ? nil : sequence[5]
@@ -213,6 +215,7 @@ class Game_Follower < Game_Character
   end
 
   def update_autoattack
+    print("#{@character_name} update_autoattack is_inline: #{@is_inline}")
     if @enemy_on_sight
       use_autoattack(@abs_target.character)
     elsif $game_party.following_leader && !@is_inline
@@ -275,6 +278,7 @@ class Game_Follower < Game_Character
     @battler = nil
     @attacked_by = nil
     @is_walking = false
+    @is_fighting = false
     $game_map.need_refresh = true
   end
 
