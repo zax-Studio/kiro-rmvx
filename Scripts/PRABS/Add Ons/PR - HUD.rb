@@ -758,10 +758,12 @@ class SpriteHUD
   #-----------------------------------------------------------------------------
 
   def refresh_texts
-    @texts.bitmap.clear
-    @texts.bitmap.draw_text(39, 4, 72, 9, $game_party.members[0].name, 0)
-    @texts.bitmap.draw_text(39, 4, 72, 9, "Lvl: #{$game_party.members[0].level}", 2)
     @level = $game_party.members[0].level
+    @name = $game_party.members[0].name
+
+    @texts.bitmap.clear
+    @texts.bitmap.draw_text(39, 4, 72, 9, @name, 0)
+    @texts.bitmap.draw_text(39, 4, 72, 9, "Lvl: #{@level}", 2)
   end
   
   #-----------------------------------------------------------------------------
@@ -779,7 +781,7 @@ class SpriteHUD
       self.opacity += 26
       self.visible = true
     end
-    if @level != $game_party.members[0].level
+    if @level != $game_party.members[0].level || @name != $game_party.members[0].name
       refresh_texts
     end
     @character.update

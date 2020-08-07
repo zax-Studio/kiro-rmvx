@@ -266,9 +266,7 @@ class Game_Party
   end
 
   def duplicate_previous_move(follower_index)
-    if follower_index > 0
-      @move_list[follower_index] = @move_list[follower_index - 1]
-    end
+    @move_list[follower_index] = @move_list[follower_index - 1]
   end
 end
 
@@ -297,7 +295,6 @@ class Game_MoveListElement
 end
 
 class Game_Player
-  AUTOSAVE_SWITCH = 63
   #--------------------------------------------------------------------------
   # * Public Instance Variables
   #--------------------------------------------------------------------------
@@ -321,10 +318,6 @@ class Game_Player
   def moveto(x, y)
     $game_party.moveto_party(x, y)
     trick_caterpillar_player_moveto(x, y)
-
-    if $game_switches[AUTOSAVE_SWITCH]
-      $save.do(1);
-    end
   end
 
   #--------------------------------------------------------------------------

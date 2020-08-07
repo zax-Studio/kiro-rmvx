@@ -4,6 +4,8 @@
 #  This window displays the number of keys.
 #==============================================================================
 class Window_Keys < Window_Base
+  ON_OFF_SWITCH = 84
+
   #--------------------------------------------------------------------------
   # * Object Initialization
   #     x : window X coordinate
@@ -21,15 +23,10 @@ class Window_Keys < Window_Base
     self.draw_icon(80, 0, 0, true)
     self.contents.draw_text(32, 0, self.width, WLH, $game_variables[5])
   end
-  # def initialize(x, y)
-  #   super(0, y, 284, WLH + 32)
-  #   refresh
-  # end
-  # #--------------------------------------------------------------------------
-  # # * Refresh
-  # #--------------------------------------------------------------------------
-  # def refresh
-  #   self.contents.clear
-  #   self.contents.draw_text(0, 0, self.width, WLH, $debug_text)
-  # end
+
+  def terminate
+    $game_switches[ON_OFF_SWITCH] = false
+    dispose
+    $keywindow = nil
+  end
 end

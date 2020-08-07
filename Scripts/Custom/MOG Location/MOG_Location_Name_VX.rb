@@ -83,33 +83,6 @@ class Game_Map
   end
 end
 
-###############
-# Window Base #
-###############
-class Window_Base < Window
-  def nd_mapic
-    mapic = Cache.system("")
-  end
-
-  def draw_mpname(x, y)
-    mapic = Cache.system("mapnamebg") rescue nd_mapic
-    cw = mapic.width
-    ch = mapic.height
-    src_rect = Rect.new(0, 0, cw, ch)
-    $MapName = $game_map.mpname.to_s if $MapName  == nil
-    self.contents.blt(x, y - ch + 65, mapic, src_rect)
-    self.contents.font.name = MOG::MPFONT
-    self.contents.font.size = 22
-    self.contents.font.bold = true
-    self.contents.font.shadow = false
-    self.contents.font.color = Color.new(0, 0, 0, 255)
-    self.contents.draw_text(x + 74, y + 26, 110, 32, $MapName, 1)
-    self.contents.font.color = Color.new(255, 255, 255, 255)
-    self.contents.draw_text(x + 75, y + 25, 110, 32, $MapName, 1)
-    $MapName = nil
-  end
-end
-
 ##########
 # Mpname #
 ##########
@@ -123,6 +96,24 @@ class Mpname < Window_Base
   def refresh
     self.contents.clear
     draw_mpname(10, 0)
+  end
+
+  def draw_mpname(x, y)
+    mapic = Cache.system("mapnamebg") rescue Cache.system("")
+    cw = mapic.width
+    ch = mapic.height
+    src_rect = Rect.new(0, 0, cw, ch)
+    $MapName = $game_map.mpname.to_s if $MapName  == nil
+    self.contents.blt(x, y - ch + 65, mapic, src_rect)
+    self.contents.font.name = MOG::MPFONT
+    self.contents.font.size = 22
+    self.contents.font.bold = true
+    self.contents.font.shadow = false
+    self.contents.font.color = Color.new(0, 0, 0, 255)
+    self.contents.draw_text(x + 10, y + 26, cw - 20, ch - 10, $MapName, 1)
+    self.contents.font.color = Color.new(255, 255, 255, 255)
+    self.contents.draw_text(x + 11, y + 25, cw - 20, ch - 10, $MapName, 1)
+    $MapName = nil
   end
 end
 
@@ -162,6 +153,7 @@ class Scene_Map
     $game_system.mpnm_y = @mpnm.y
     if $game_switches[MOG::WM_SWITCH_VIS_DISABLE] == true or $game_system.fdtm <= 0
       @mpnm.visible = false
+      return
     else
       @mpnm.visible = true
     end

@@ -27,6 +27,7 @@ class Scene_Gameover < Scene_Base
     check_continue
     create_game_over_window
     @gold_window = Window_Gold.new(384, 0)
+    $keywindow.terminate unless $keywindow.nil?
   end
   
   def update
@@ -36,8 +37,7 @@ class Scene_Gameover < Scene_Base
     if Input.trigger?(Input::C)
       case @command_window.index
       when 0    # Back to title
-      $scene = Scene_Title.new
-      Graphics.fadeout(120)
+        command_to_title
       when 1    # Continue
         command_continue
       when 2    # Shutdown
@@ -81,6 +81,11 @@ class Scene_Gameover < Scene_Base
   
   def check_continue
     @continue_enabled = (Dir.glob('Save*.rvdata').size > 0)
+  end
+
+  def command_to_title
+    $scene = Scene_Title.new
+    Graphics.fadeout(120)
   end
   
   def command_continue

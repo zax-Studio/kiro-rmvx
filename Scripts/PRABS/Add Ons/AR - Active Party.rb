@@ -129,7 +129,7 @@ class Game_Follower < Game_Character
         @autoattack_type = 1
       end
     end
-    if @automove && (!@is_inline || @is_fighting)
+    if @automove
       update_automove
     end
     if !@attacked_by.nil?
@@ -207,7 +207,7 @@ class Game_Follower < Game_Character
         move_toward_character(@abs_target.character, false, offset)
         turn_toward_char(@abs_target.character)
       end
-    elsif !@is_inline && $game_party.following_leader
+    elsif $game_party.following_leader && !@is_inline
       follow_leader
     end
   end
@@ -215,12 +215,16 @@ class Game_Follower < Game_Character
   def update_autoattack
     if @enemy_on_sight
       use_autoattack(@abs_target.character)
+    elsif $game_party.following_leader && !@is_inline
+      follow_leader
     end
   end
 
   def use_autoattack(char)
     if char.nil?
-      set_follow_line_variables
+      if $game_party.following_leader && !@is_inline
+        follow_leader
+      end
       return
     end
     break_line()
@@ -289,7 +293,7 @@ class Game_Follower < Game_Character
     moves_finished = follow_line($game_player.x, $game_player.y, true, true, number_in_line)
     if moves_finished > 0
       set_follow_line_variables()
-      $game_party.duplicate_previous_move(number_in_line - 1)
+      $game_party.duplicate_previous_move(number_in_line)
     end
   end
 
