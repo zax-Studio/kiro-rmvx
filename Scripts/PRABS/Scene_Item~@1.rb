@@ -30,10 +30,11 @@ class Scene_Item < Scene_Base
   #--------------------------------------------------------------------------
   # ● アイテム選択の更新
   #--------------------------------------------------------------------------
-  
+  NOT_HUD_CONSUMABLE_TEXT = "*NOTHUD"
+
   def update_item_selection
     unless @item_window.item.nil?
-      if @item_window.item.is_a?(RPG::Item)
+      if @item_window.item.is_a?(RPG::Item) && !@item_window.item.note.include?(NOT_HUD_CONSUMABLE_TEXT)
         for hotkey in $game_player.hotkeys
           if Input.trigger?(hotkey.key)
             for hotkey2 in $game_player.hotkeys

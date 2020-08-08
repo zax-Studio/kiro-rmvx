@@ -99,7 +99,7 @@ class Game_Follower < Game_Character
     @combo_max = 2
     @enemy_on_sight = false
     @automove = true
-    @automove_sight = 5
+    @automove_sight = 3
     @autoattack = true
     @autoattack_type = 0
     @auto_wait = 0
@@ -110,6 +110,7 @@ class Game_Follower < Game_Character
     super
     if (@battler.dead?)
       set_dead()
+      follow_leader
       return
     end
     if @is_fighting
@@ -199,7 +200,6 @@ class Game_Follower < Game_Character
 
   def update_automove
     @enemy_on_sight = @abs_target.distance <= @automove_sight
-    print("#{@character_name} update_automove is_fighting: #{@is_fighting}")
     if @enemy_on_sight
       sequence = PRABS::HERO.get_sequence(@battler.id, @battler.weapon_id, 0)[0]
       offset = sequence.nil? ? nil : sequence[5]
@@ -215,7 +215,6 @@ class Game_Follower < Game_Character
   end
 
   def update_autoattack
-    print("#{@character_name} update_autoattack is_inline: #{@is_inline}")
     if @enemy_on_sight
       use_autoattack(@abs_target.character)
     elsif $game_party.following_leader && !@is_inline
@@ -298,7 +297,6 @@ class Game_Follower < Game_Character
     moves_finished = follow_line($game_player.x, $game_player.y, true, true, number_in_line)
     if moves_finished > 0
       set_follow_line_variables()
-      $game_party.queue_follower_move(number_in_line - 1)
     end
   end
 
@@ -319,7 +317,7 @@ class Game_Follower < Game_Character
       end
       unless walk || @battler.nil?
         set_direction(direction)
-        @appear = true unless @battler.dead? || $game_party.disable_appear_flag
+        @appear = true unless @battler.dead?
       end
     end
     if walk
@@ -327,7 +325,6 @@ class Game_Follower < Game_Character
       sy = distance_y_from_target(ny)
       walkto(sx, sy)
       if !@is_walking
-        moveto(nx, ny) if @move_failed
         set_direction(direction)
         moves_finished = 1
       end

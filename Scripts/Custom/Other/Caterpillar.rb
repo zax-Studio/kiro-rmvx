@@ -162,7 +162,6 @@ class Game_Party
   # * Public Instance Variables
   #--------------------------------------------------------------------------
   attr_reader :followers
-  attr_reader :disable_appear_flag
   #--------------------------------------------------------------------------
   # * Object Initialization
   #--------------------------------------------------------------------------
@@ -172,8 +171,6 @@ class Game_Party
     trick_caterpillar_party_initialize
     @followers = Array.new(MAX_SIZE - 1) { Game_Follower.new(nil) }
     @move_list = []
-    @queued_moves = []
-    @disable_appear_flag = false
   end
 
   #--------------------------------------------------------------------------
@@ -223,7 +220,6 @@ class Game_Party
       finished_walking_count += char.follow_line(x, y, walk, in_caterpillar_position, number_in_line)
       if walk && finished_walking_count == @followers.length
         $game_switches[FOLLOW_LEADER_SWITCH] = false
-        @disable_appear_flag = false
       end
     end
     
@@ -277,7 +273,7 @@ class Game_Party
   #--------------------------------------------------------------------------
   def update_move(type, *args)
     if @regroup_on_next_move_flag || (@refollow_on_next_move_flag && type != @followers[0].direction)
-      moveto_party($game_player.x, $game_player.y, false, false, true)
+      moveto_party($game_player.x, $game_player.y, false, true, true)
     end
     if @refollow_on_next_move_flag || @regroup_on_next_move_flag
       @followers.each_index do |i|
@@ -285,28 +281,12 @@ class Game_Party
       end
       @refollow_on_next_move_flag = false
       @regroup_on_next_move_flag = false
-    elsif !@queued_moves.nil? && @queued_moves.length > 0
-      for i in 0...@queued_moves.length
-        unless @queued_moves[i].nil?
-          for j in 0..i
-            @move_list[j] = Game_MoveListElement.new(@queued_moves[i], args)
-          end
-        end
-      end
-      #@disable_appear_flag = true
-      #@refollow_on_next_move_flag = true
-      @queued_moves.clear
     end
     move_party
     @move_list.unshift(Game_MoveListElement.new(type, args))
     if type == 5
       @use_move_list = @actors.length - 1
     end
-  end
-
-  def queue_follower_move(follower_index)
-    @queued_moves = [] if @queued_moves.nil? # this is to patch Saved Games previous to this update.
-    @queued_moves[follower_index] = $game_player.direction
   end
 end
 
