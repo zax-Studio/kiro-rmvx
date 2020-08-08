@@ -72,23 +72,24 @@ Credit= <<_MAP_CREDIT_
 <h>Historia
 Andrés Rondón
 
-<h>Graficos
+<h>Gráficos
 Andrés Rondón
 Delio Diaz
 RTP VX
 RTP XP
 Hobinicus - Pantalla de Titulo
-Techie de rpgmakervx.net – Pantalla de “GameOver”
+Techie de rpgmakervx.net - Pantalla de “GameOver”
 
-<h>Mapeo
+<h>Diseño de niveles
 Andrés Rondón
 
-<h>Scrips
-PRABS
+<h>Programación
+Andrés Rondón
+
+PRCoders y poccil:
+  -PR ABS
 
 KGC's:
- -DayNight
- -MiniMap
  -Title Dierection
  -Location Play Time
 
@@ -108,24 +109,23 @@ Moghunter's:
 puppeto4's:
  -Hide Item
 
-Prexus's:
- -Party Manager
-
 Moon's:
  -Menú de Game Over
 
-<h>Testeo
-Miguel Miguel
+Desconocido:
+ -Party Caterpillar
 
-<h>Gracias a
+<h>Testeo
+María Rodriguez
+Miguel Miguel
+Edward Suriel
+Erick Rondón
+
+<h>Gracias especiales
 Enterbrain
-RPG Maker VX & RTP VX
 Woratana
-KGC
 Dubealex por AMS R4 Script
-RTH de www.rmxp.org y PR Coders por
-PR ABS 2.0
-Eternal Sorrow - Sistema de eventos, Event Shooter
+PR Coders por PR ABS 2.0
 
 _MAP_CREDIT_
 #--------------------------
@@ -135,7 +135,7 @@ _MAP_CREDIT_
   # SETUP HEADER TEXT HERE
   #-------------------------------------
   def header_properties(bitmap)
-    bitmap.font.name = 'Tahoma' # Text Font
+    bitmap.font.name = 'Calling Code' # Text Font
     bitmap.font.color = Color.new(255, 0, 0, 255) # (Red, Green, Blue, Opacity)
     bitmap.font.size = 30 # Text size
     bitmap.font.bold = true # Bold Text? (true/false)
@@ -149,7 +149,7 @@ _MAP_CREDIT_
   # SETUP CONTENT TEXT HERE
   #-------------------------------------
   def content_properties(bitmap)
-    bitmap.font.name = 'Tahoma'
+    bitmap.font.name = 'Calling Code'
     bitmap.font.color = Color.new(255, 255, 255, 255)
     bitmap.font.size = 22
     bitmap.font.bold = true
