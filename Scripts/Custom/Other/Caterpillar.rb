@@ -10,7 +10,7 @@ class Game_Follower < Game_Character
   alias_method :trick_caterpillar_follower_initialize, :initialize
   
   def initialize(actor)
-    super
+    super()
     @through = true
     @priority_type = 0
     @actor = actor
@@ -224,7 +224,7 @@ class Game_Party
 
     move_party
     @move_list.unshift(Game_MoveListElement.new(type, args))
-    
+
     if type == 5
       @use_move_list = @actors.length - 1
     end

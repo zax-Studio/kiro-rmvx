@@ -25,14 +25,14 @@ module TitleDirection
 
   #                 ◆ Show Logo During Testplay (DEBUGGING) ◆
   # This toggle allows you to bypass the logo display when debugging.
-  TESTPLAY_SHOW = false
+  TESTPLAY_SHOW = true
   
   #                         ◆ Splash Logo Image ◆
   #  Here, you may specify the image file you'd like to use as a logo.
-  # The image must be in the "Graphics/System" folder.
+  # The image must be in the "Graphics/Pictures" folder.
   # Setting this to nil will display nothing. If set to nil, the Splash Logo 
   #  Sound Effect defined below is also assumed to be nil.
-  SPLASH_LOGO_FILE = "CARGADO"
+  SPLASH_LOGO_FILE = "logo"
   
   #                       ◆ Splash Logo Sound Effect ◆
   # Here, you may specify a sound effect to play while the splash logo displays.
@@ -43,13 +43,13 @@ module TitleDirection
   #  Or class notation, allowing for additional customization, as such:
   #   SPLASH_LOGO_SE = RPG::SE.new("start_logo", 80, 100)
   # Format: ("SoundName", Volume, Pitch)
-  SPLASH_LOGO_SE = "Barrier"
+  SPLASH_LOGO_SE = RPG::SE.new("Decision2", 60, 50)
   
   #                           ◆ Logo Splash Style ◆
   #  Here, you may specify an effect for your logo. It's best just to try out
   # each option and see what works for you.
   #   0..Fade  1..Crossing  2..Zoom  3..Splash
-  SPLASH_LOGO_TYPE = 2
+  SPLASH_LOGO_TYPE = 0
   end
 end
 #=============================================================================#
@@ -414,7 +414,7 @@ class Scene_Title < Scene_Base
 
     # エフェクト用スプライト作成
     sprite = Sprite_TitleLogo.new
-    bitmap = Cache.system(KGC::TitleDirection::SPLASH_LOGO_FILE)
+    bitmap = Cache.picture(KGC::TitleDirection::SPLASH_LOGO_FILE)
     dx = Graphics.width / 2
     dy = Graphics.height / 2
 

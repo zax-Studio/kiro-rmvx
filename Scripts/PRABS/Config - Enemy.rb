@@ -30,15 +30,21 @@ module PRABS::CONFIG::ENEMY
     # Wasp - 3
     self.setup_attack_enemy_animation(3, 0, "", 92)
 
-    # Bat - ID 2
-    self.setup_attack_enemy_animation(2, 0, "", 93)
+    # Bat - ID 21, 14
+    self.setup_attack_enemy_animation([2, 14], 0, "", 93)
+
+    # Wolves - ID 46
+    self.setup_attack_enemy_animation(46, 0, "", 94)
 
     # Valorias - ID 49, 50
     self.setup_attack_enemy_animation([49, 50], 0, "", 95)
 
-    # Ice - ID 40
-    self.setup_attack_enemy_animation([40], 0, "", 97)
+    # Bosses - ID 33, 36, 37, 38, 39, 52
+    self.setup_attack_enemy_animation([33, 36, 37, 38, 39, 52], 0, "", 96)
 
-    # Bosses - ID 33,36,37,38,39,52
-    self.setup_attack_enemy_animation([33,36,37,38,39,52], 0, "", 96)
+    # Ice - ID 19, 40
+    self.setup_attack_enemy_animation([19, 40], 0, "", 97)
+
+    # Big Monsters - ID 17, 41, 44, 45
+    self.setup_attack_enemy_animation([17, 41, 44, 45], 0, "", 98)
 end
