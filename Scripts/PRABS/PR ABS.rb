@@ -2314,8 +2314,6 @@ class Game_Actor < Game_Battler
 end
 #==============================================================================
 # ABS_Target
-#------------------------------------------------------------------------------
-# Superclasse ABS_Target
 #==============================================================================
 
 class ABS_Target
@@ -2328,8 +2326,6 @@ class ABS_Target
 end
 #==============================================================================
 # ABS_Targets
-#------------------------------------------------------------------------------
-# Superclasse ABS_Targets
 #==============================================================================
 
 class ABS_Targets
@@ -2518,6 +2514,7 @@ class Game_Character
   end
 
   def move_toward_character(char, force_movement = false, offset_x = 0)
+    turn_toward_char(@abs_target.character) if offset_x != 0
     if offset_x == 0
       sx = distance_x_from_char(char)
     else

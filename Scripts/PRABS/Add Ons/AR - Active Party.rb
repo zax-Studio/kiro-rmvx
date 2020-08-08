@@ -97,9 +97,9 @@ class Game_Follower < Game_Character
     @is_walking = false
     @follower_combo = [false, 0, 1]
     @combo_max = 2
-    @enemy_on_sight = false
     @automove = true
     @automove_sight = 3
+    @enemy_on_sight = false
     @autoattack = true
     @autoattack_type = 0
     @auto_wait = 0
@@ -112,8 +112,6 @@ class Game_Follower < Game_Character
       set_dead()
       follow_leader
       return
-    end
-    if @is_fighting
     end
     unless @abs_target.character.nil?
       return if follower_attack()
@@ -135,26 +133,28 @@ class Game_Follower < Game_Character
       update_get_abs_target
       update_automove
     end
-    if !@attacked_by.nil?
-      if @attacked_by.battler.nil? || @attacked_by.dead?
-        @attacked_by = nil
+
+    if !@attacked_by.nil? || (@is_inline && !$game_player.attacked_by.nil?)
+      attacker = @attacked_by
+      attacker ||= $game_player.attacked_by
+      if attacker.battler.nil? || attacker.battler.dead?
+        if !@attacked_by.nil?
+          @attacked_by = nil
+        else
+          $game_player.attacked_by = nil
+        end
       elsif !@is_fighting
-        move_toward_character(@attacked_by)
-        @is_fighting = true
-      end
-    elsif @is_inline && !$game_player.attacked_by.nil?
-      if $game_player.attacked_by.battler.nil? || $game_player.attacked_by.dead?
-        $game_player.attacked_by = nil
-      elsif !@is_fighting
-        move_toward_character($game_player.attacked_by)
+        move_toward_character(attacker)
         @is_fighting = true
       end
     end
   end
 
+  # returning true means it finished the move
+  # returning false means it will continue the remaining process in the update method
   def follower_attack
     enemy =  @abs_target.character
-    if enemy.battler.nil?
+    if enemy.battler.nil? || enemy.battler.dead?
       @is_fighting = false
       return false
     end
@@ -164,8 +164,8 @@ class Game_Follower < Game_Character
         @follower_combo[1] -= 1
         return true
       end
-      dx = (@x - enemy.character.x).abs
-      dy = (@y - enemy.character.y).abs
+      dx = (@x - enemy.x).abs
+      dy = (@y - enemy.y).abs
       sequence = PRABS::HERO.get_sequence(@battler.id, @battler.weapon_id, 0)[0]
       offset_x = sequence.nil? ? nil : sequence[5]
       if dx <= 1 + (offset_x.nil? ? 0 : offset_x) && dy <= 1
@@ -180,18 +180,20 @@ class Game_Follower < Game_Character
       end
       return true
     end
+
     if @abs_wait > 0
       @abs_wait -= 1
       return true
     end
+
     return false
   end
 
   def update_get_abs_target
     abs_targets = ABS_Targets.new
     for char in $game_map.screen_enemies.values
-      if char.battler != nil
-        abs_targets.push(ABS_Target.new(char, get_dist(char))) unless char.battler.dead?
+      unless (char.battler.nil? || char.battler.battler.dead?)
+        abs_targets.push(ABS_Target.new(char, get_dist(char)))
       end
     end
     @abs_target = abs_targets.get_closest
@@ -202,13 +204,9 @@ class Game_Follower < Game_Character
     @enemy_on_sight = @abs_target.distance <= @automove_sight
     if @enemy_on_sight
       sequence = PRABS::HERO.get_sequence(@battler.id, @battler.weapon_id, 0)[0]
-      offset = sequence.nil? ? nil : sequence[5]
-      if offset.nil?
-        move_toward_character(@abs_target.character)
-      else
-        move_toward_character(@abs_target.character, false, offset)
-        turn_toward_char(@abs_target.character)
-      end
+      offset = sequence.nil? ? 0 : sequence[5]
+      offset ||= 0
+      move_toward_character(@abs_target.character, false, offset)
     elsif $game_party.following_leader && (!@is_inline || @is_fighting)
       follow_leader
     end
@@ -223,13 +221,13 @@ class Game_Follower < Game_Character
   end
 
   def use_autoattack(char)
-    if char.nil? || char.battler.nil? || char.dead?
+    if char.nil? || char.battler.nil? || char.battler.dead?
       if $game_party.following_leader
         follow_leader
       end
       return
     end
-    break_line()
+    break_line
     @is_fighting = true
     dx = (@x - char.x).abs
     dy = (@y - char.y).abs
@@ -239,9 +237,9 @@ class Game_Follower < Game_Character
       target_attack(char, @follower_combo[2])
       @abs_wait = 40
       if (rand(@combo_max * 2) <= @combo_max)
-        @enemy_combo = [true, rand(10) + 10, 2]
+        @follower_combo = [true, rand(10) + 10, 2]
       else
-        @enemy_combo = [false, 0, 1]
+        @follower_combo = [false, 0, 1]
       end
       @auto_wait = 40
     end
@@ -272,7 +270,7 @@ class Game_Follower < Game_Character
   end
   
   def set_dead
-    super()
+    super
     @opacity = 0
     @battler = nil
     @attacked_by = nil
@@ -304,15 +302,15 @@ class Game_Follower < Game_Character
     nx = x
     ny = y
     moves_finished = 0
-    direction = $game_player.direction
     if in_caterpillar_position
-      if direction == 2
+      case $game_player.direction
+      when 2
         ny -= number_in_line
-      elsif direction == 4
+      when 4
         nx += number_in_line
-      elsif direction == 6
+      when 6
         nx -= number_in_line
-      elsif direction == 8
+      when 8
         ny += number_in_line
       end
       unless walk || @battler.nil?
@@ -355,7 +353,6 @@ class Game_Party
   alias_method :abs_party_initialize, :initialize
   def initialize
     abs_party_initialize
-    @followers = []
     @current_member_id = 9
     @current_member_index = 0
     @orig_party_order = []
@@ -408,8 +405,7 @@ class Game_Party
     for i in 1..@actors.length do
       next_orig_index = next_orig_index + 1 >= @actors.length ? 0 : next_orig_index + 1
       next_member_id = @orig_party_order[next_orig_index]
-      battler = $game_actors[next_member_id]
-      unless battler.dead?
+      unless $game_actors[next_member_id].dead?
         @actors.collect! do |i|
           case i
           when current_member_id
@@ -452,18 +448,15 @@ class Game_Party
   end
 
   def abs_all_dead?
-    party_actors = members()
-    party_actors.each do |actor|
-      return false unless actor.dead?
-    end
+    members().each { |actor| return false unless actor.dead? }
     return true
   end
 
   def toggle_group
     if (!@following_leader)
-      all_follow_leader()
+      all_follow_leader
     else
-      ungroup()
+      ungroup
     end
   end
 
@@ -534,7 +527,7 @@ class Game_Interpreter
     this_event = get_character(0)
     return true if $game_player.pos?(this_event.x, this_event.y)
     $game_party.followers.each do |char|
-      next if char.battler.nil? || char.actor.nil?
+      next if char.battler.nil? || char.battler.dead? || char.actor.nil?
       return true if char.pos_nt?(this_event.x, this_event.y)
     end
 
