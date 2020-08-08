@@ -192,7 +192,7 @@ class Game_Follower < Game_Character
   def update_get_abs_target
     abs_targets = ABS_Targets.new
     for char in $game_map.screen_enemies.values
-      unless (char.battler.nil? || char.battler.battler.dead?)
+      unless (char.battler.nil? || char.battler.dead?)
         abs_targets.push(ABS_Target.new(char, get_dist(char)))
       end
     end
