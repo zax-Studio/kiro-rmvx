@@ -41,7 +41,7 @@ module PRABS::CONFIG::DATABASE
   SKILLS[86] = [5, 5, QUAD, ""]
 
   # Bomb - Damage
-  SKILLS[89] = [0, 4, RED, ""]
+  SKILLS[89] = [0, 3, RED, ""]
   # Impacto Frio
   SKILLS[64] = [0, 4, RED, ""]
   # Llamarada Letal

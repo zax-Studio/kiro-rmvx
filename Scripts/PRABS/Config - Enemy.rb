@@ -27,8 +27,8 @@ module PRABS::CONFIG::ENEMY
 
     DEFAULT_ANIMATION_ATTACK_ID = 84
   
-    # Wasp - 3
-    self.setup_attack_enemy_animation(3, 0, "", 92)
+    # Wasp - ID 3, 47
+    self.setup_attack_enemy_animation([3, 47], 0, "", 92)
 
     # Bat - ID 21, 14
     self.setup_attack_enemy_animation([2, 14], 0, "", 93)
@@ -45,6 +45,6 @@ module PRABS::CONFIG::ENEMY
     # Ice - ID 19, 40
     self.setup_attack_enemy_animation([19, 40], 0, "", 97)
 
-    # Big Monsters - ID 17, 41, 44, 45
-    self.setup_attack_enemy_animation([17, 41, 44, 45], 0, "", 98)
+    # Big Monsters - ID 17, 41, 44, 45, 48
+    self.setup_attack_enemy_animation([17, 41, 44, 45, 48], 0, "", 98)
 end

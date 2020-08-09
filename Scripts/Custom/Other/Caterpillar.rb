@@ -35,6 +35,7 @@ class Game_Follower < Game_Character
       @character_name = @battler.character_name
       @character_index = @battler.character_index
     else
+      @battler = nil
       @character_name = ""
       @character_index = 0
     end

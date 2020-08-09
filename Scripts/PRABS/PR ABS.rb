@@ -468,21 +468,8 @@ class Game_Character
         return true if event.priority_type == 1   
       end
     end
-    if PRCoders.logged_and_loaded?("Catterpillar")
-      unless PR_CATTERPILLAR::PARTY_TYPE == 0
-        for actor in $game_train_actors.party_actors
-          return true if actor.pos_nt?(x, y)
-        end
-      end
-    end
-    if @priority_type == 1      
-      if PRCoders.logged_and_loaded?("Catterpillar")
-        if $game_player.pos_nt?(x, y) and !self.is_a?(Game_Train_Actor)
-          return true
-        end     
-      else
-        return true if $game_player.pos_nt?(x, y)
-      end
+    if @priority_type == 1
+      return true if $game_player.pos_nt?(x, y)
       return true if $game_map.boat.pos_nt?(x, y)   # ?????????
       return true if $game_map.ship.pos_nt?(x, y)   # ?????????
     end
@@ -2381,6 +2368,7 @@ class Game_Character
   attr_accessor :last_action
   attr_accessor :attacked_by
   attr_accessor :permanent_balloon_id
+  attr_reader   :fake_enemy
 
   #--------------------------------------------------------------------------
   # ● Alias
@@ -2420,6 +2408,8 @@ class Game_Character
 
     @abs_target = ABS_Target.new(nil, 99)
     @permanent_balloon_id = 0
+
+    @enemy = false
   end
   
   def get_dist(character)
@@ -2545,6 +2535,58 @@ class Game_Character
     @hudded_ballon_x = @x
     @hudded_ballon_y = @y
   end
+
+  #--------------------------------------------------------------------------
+  # ● Use Skill
+  #--------------------------------------------------------------------------
+
+  def use_skill(skill, delay = 0, animation = true)
+    @last_action_type = 1
+    @last_action = skill
+    return false if skill.nil? || @battler.nil?
+    $game_temp.in_battle = true
+    unless @battler.abs_skill_can_use?(skill, !@enemy)
+      $game_temp.in_battle = false
+      Sound.play_buzzer
+      return false
+    end
+    $game_temp.in_battle = false
+    @battler.mp -= skill.mp_cost
+    data = PRABS::CONFIG::DATABASE.get_skill(skill.id)
+    a_name = data[3].nil? ? "" : data[3]
+    setup_animation(data[3].nil? ? "" : data[3]) if animation
+    @battler.used_skill(skill)
+    if (data[2] == PRABS::CONFIG::TYPE::SHOOT)
+      unless @enemy
+        if (!self.is_a?(Game_Follower) && data[4] != nil && data[4].size >= 2) # Consume Item
+          if ($game_party.item_number($data_items[data[4][0]]) < data[4][1])
+            Sound.play_buzzer
+            return false
+          end
+          if (data[4][2] == true)
+            $game_party.lose_item($data_items[data[4][0]], 1)
+          end
+        end
+        if (data[5] != nil) # Play animation
+          $game_map.setup_map_animation(data[5], @x, @y, @direction)
+        end
+      end
+      event = $game_map.setup_shoot_event(data[0], data[1], self, delay)
+      event.type = 0
+      event.type_id = skill.id
+      return true
+    end
+    targets = []
+    if (skill.for_user? || skill.for_friend?)
+      self.suffer_skill(self, skill, delay)
+    elsif skill.for_opponent?
+      targets = skill_area(skill)
+      for target in targets
+        @hitted |= target.suffer_skill(self, skill, delay)
+      end
+    end
+    return true
+  end
   
   #--------------------------------------------------------------------------
   # ● Método que ocorrerá ao mudar de mapa
@@ -2592,6 +2634,7 @@ class Game_Character
   #--------------------------------------------------------------------------
   
   def setup_animation(animation_name, loop = false, play = true)
+    frames = 0
     if animation_name != ""
       real_name = @character_name + "/" + animation_name
       frames = FRAMES[real_name]
@@ -2706,6 +2749,7 @@ class Game_Character
   #--------------------------------------------------------------------------
   
   def attack(target, delay)
+    turn_toward_char(target)
     target.suffer_attack(self, delay, @direction)
   end
   
@@ -3147,48 +3191,6 @@ class Game_Event < Game_Character
   end
 
   #--------------------------------------------------------------------------
-  # ● Habilidade
-  #--------------------------------------------------------------------------
-
-  def use_skill(skill, delay = 0, animation = true)
-    @last_action_type = 1
-    @last_action = skill
-    return false if skill.nil?
-    return false if @battler.nil?
-    if !@fake_enemy
-      @battler.unlimited_mp = @unlimited_mp
-      $game_temp.in_battle = true
-      unless (@battler.abs_skill_can_use?(skill))
-        $game_temp.in_battle = false
-        Sound.play_buzzer
-        return false
-      end
-      $game_temp.in_battle = false
-      @battler.mp -= skill.mp_cost 
-    end
-    data = PRABS::CONFIG::DATABASE.get_skill(skill.id)
-    a_name = data[3].nil? ? "" : data[3]
-    setup_animation(data[3].nil? ? "" : data[3]) if animation
-    @battler.used_skill(skill)
-    if (data[2] == PRABS::CONFIG::TYPE::SHOOT)
-      event = $game_map.setup_shoot_event(data[0], data[1], self, delay)
-      event.type = 0
-      event.type_id = skill.id
-      return true
-    end
-    targets = []
-    if (skill.for_user? || skill.for_friend?)
-      self.suffer_skill(self, skill, delay)
-    elsif skill.for_opponent?
-      targets = skill_area(skill)
-      for target in targets
-        @hitted |= target.suffer_skill(self, skill, delay)
-      end
-    end
-    return true
-  end
-
-  #--------------------------------------------------------------------------
   # ● 
   #--------------------------------------------------------------------------
       
@@ -3257,7 +3259,6 @@ class Game_Event < Game_Character
   def clear_abs_starting
     @battler = nil
     @enemy_id = 0
-    @enemy = false
     @clear_sprite = true
     # Acertável?
     @weapon_hittable = false
@@ -3313,7 +3314,7 @@ class Game_Event < Game_Character
           @battler = Game_Enemy.new(0, $1.to_i)
           @enemy_id = $1.to_i
           @fake_enemy = true
-          @enemy = false
+          @enemy = true
         when /enemy[ ]?(\d+)/
           @battler = Game_Enemy.new(0, $1.to_i)
           @enemy_id = $1.to_i
@@ -3671,9 +3672,9 @@ class Game_Event < Game_Character
         @enemy_combo[1] -= 1
         return
       end
-      dx = (@x - @abs_target.character.x).abs
-      dy = (@y - @abs_target.character.y).abs
-      if dx <= 1 && dy <= 1
+      dx = (@real_x - @abs_target.character.real_x).abs
+      dy = (@real_y - @abs_target.character.real_y).abs
+      if dx + dy <= 256
         target_attack(@abs_target.character, @enemy_combo[2])
         if (rand(@combo_max * 2) <= (@combo_max - @enemy_combo[2] + 1) && @enemy_combo[2] < @combo_max)
           @enemy_combo[1] = rand(10) + 10
@@ -3730,9 +3731,9 @@ class Game_Event < Game_Character
   #--------------------------------------------------------------------------
   
   def use_autoattack(char)       
-    dx = (@x - char.x).abs
-    dy = (@y - char.y).abs
-    if dx <= 1 && dy <= 1
+    dx = (@real_x - char.real_x).abs
+    dy = (@real_y - char.real_y).abs
+    if dx + dy <= 256
       target_attack(char, @enemy_combo[2])
       @abs_wait = 40
       if (rand(@combo_max * 2) <= @combo_max)
@@ -4117,56 +4118,6 @@ class Game_Player < Game_Character
   end
 
   #--------------------------------------------------------------------------
-  # ● Item
-  #--------------------------------------------------------------------------
-
-  def use_skill(skill, delay = 0, animation = true)
-    @last_action_type = 1
-    @last_action = skill
-    return false if skill.nil?
-    $game_temp.in_battle = true
-    unless @battler.abs_skill_can_use?(skill, true)
-      $game_temp.in_battle = false
-      Sound.play_buzzer
-      return false
-    end
-    $game_temp.in_battle = false
-    @battler.mp -= skill.mp_cost
-    data = PRABS::CONFIG::DATABASE.get_skill(skill.id)
-    a_name = data[3].nil? ? "" : data[3]
-    setup_animation(data[3].nil? ? "" : data[3]) if animation
-    @battler.used_skill(skill)
-    if (data[2] == PRABS::CONFIG::TYPE::SHOOT)
-      if (data[4] != nil && data[4].size >= 2)
-        if ($game_party.item_number($data_items[data[4][0]]) < data[4][1])
-          Sound.play_buzzer
-          return false
-        end
-        if (data[4][2] == true)
-          $game_party.lose_item($data_items[data[4][0]], 1)
-        end
-      end
-      if (data[5] != nil)
-        $game_map.setup_map_animation(data[5], @x, @y, @direction)
-      end
-      event = $game_map.setup_shoot_event(data[0], data[1], self, delay)
-      event.type = 0
-      event.type_id = skill.id
-      return true
-    end
-    targets = []
-    if (skill.for_user? || skill.for_friend?)
-      self.suffer_skill(self, skill, delay)
-    elsif skill.for_opponent?
-      targets = skill_area(skill)
-      for target in targets
-        @hitted |= target.suffer_skill(self, skill, delay)
-      end
-    end
-    return true
-  end
-
-  #--------------------------------------------------------------------------
   # ● Atualiza as teclas
   #--------------------------------------------------------------------------
 
@@ -4282,7 +4233,6 @@ class Game_Player < Game_Character
     @hitted = false
     if (sequence[1] == 0)
       @abs_wait = setup_animation(sequence[2])
-      @abs_wait ||= 0
       front_x = $game_map.x_with_direction(@x, @direction)
       front_y = $game_map.y_with_direction(@y, @direction)
       attack_animation(left_handed, front_x, front_y)
@@ -4296,14 +4246,12 @@ class Game_Player < Game_Character
     elsif (sequence[1] < 0)
       if (use_item($data_items[sequence[1]], delay, false))
         @abs_wait = setup_animation(sequence[2])
-        @abs_wait ||= 0
         return true
       end
       return false
     end
     if (use_skill($data_skills[sequence[1]], delay, false))
       @abs_wait = setup_animation(sequence[2])
-      @abs_wait ||= 0
       return true
     end
     return false

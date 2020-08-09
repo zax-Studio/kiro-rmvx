@@ -113,7 +113,7 @@ class Game_Follower < Game_Character
       follow_leader
       return
     end
-    unless @abs_target.character.nil?
+    if @enemy_on_sight
       return if follower_attack()
     end
     return if self.moving?
@@ -154,7 +154,7 @@ class Game_Follower < Game_Character
   # returning false means it will continue the remaining process in the update method
   def follower_attack
     enemy =  @abs_target.character
-    if enemy.battler.nil? || enemy.battler.dead?
+    if enemy.nil? || enemy.battler.nil? || enemy.battler.dead?
       @is_fighting = false
       return false
     end
@@ -164,11 +164,11 @@ class Game_Follower < Game_Character
         @follower_combo[1] -= 1
         return true
       end
-      dx = (@x - enemy.x).abs
-      dy = (@y - enemy.y).abs
+      dx = (@real_x - enemy.real_x).abs
+      dy = (@real_y - enemy.real_y).abs
       sequence = PRABS::HERO.get_sequence(@battler.id, @battler.weapon_id, 0)[0]
       offset_x = sequence.nil? ? nil : sequence[5]
-      if dx <= 1 + (offset_x.nil? ? 0 : offset_x) && dy <= 1
+      if dx + dy <= 256 + (offset_x.nil? ? 0 : offset_x * 256)
         target_attack(enemy, @follower_combo[2])
         if (rand(@combo_max * 2) <= (@combo_max - @follower_combo[2] + 1) && @follower_combo[2] < @combo_max)
           @follower_combo[1] = rand(10) + 10
@@ -177,8 +177,8 @@ class Game_Follower < Game_Character
           @follower_combo = [false, 0, 1]
         end
         @abs_wait = 40 + (@follower_combo[2] * 15)
+        return true
       end
-      return true
     end
 
     if @abs_wait > 0
@@ -192,16 +192,16 @@ class Game_Follower < Game_Character
   def update_get_abs_target
     abs_targets = ABS_Targets.new
     for char in $game_map.screen_enemies.values
-      unless (char.battler.nil? || char.battler.dead?)
+      unless (char.battler.nil? || char.battler.dead? || char.fake_enemy)
         abs_targets.push(ABS_Target.new(char, get_dist(char)))
       end
     end
     @abs_target = abs_targets.get_closest
     @abs_target ||= ABS_Target.new(nil, 99)
+    @enemy_on_sight = @abs_target.distance <= @automove_sight
   end
 
   def update_automove
-    @enemy_on_sight = @abs_target.distance <= @automove_sight
     if @enemy_on_sight
       sequence = PRABS::HERO.get_sequence(@battler.id, @battler.weapon_id, 0)[0]
       offset = sequence.nil? ? 0 : sequence[5]
@@ -219,7 +219,7 @@ class Game_Follower < Game_Character
       follow_leader
     end
   end
-
+  
   def use_autoattack(char)
     if char.nil? || char.battler.nil? || char.battler.dead?
       if $game_party.following_leader
@@ -229,11 +229,11 @@ class Game_Follower < Game_Character
     end
     break_line
     @is_fighting = true
-    dx = (@x - char.x).abs
-    dy = (@y - char.y).abs
+    dx = (@real_x - char.real_x).abs
+    dy = (@real_y - char.real_y).abs
     sequence = PRABS::HERO.get_sequence(@battler.id, @battler.weapon_id, 0)[0]
     offset_x = sequence.nil? ? nil : sequence[5]
-    if dx <= 1 + (offset_x.nil? ? 0 : offset_x) && dy <= 1
+    if dx + dy <= 256 + (offset_x.nil? ? 0 : offset_x * 256)
       target_attack(char, @follower_combo[2])
       @abs_wait = 40
       if (rand(@combo_max * 2) <= @combo_max)
@@ -252,19 +252,26 @@ class Game_Follower < Game_Character
     # Randomness of attack sequence (FrontAttack,Circle)
     sequence = data[rand(data.length)]
     if !sequence.nil?
-      animation_name = sequence[2]
-      skill = $data_skills[sequence[1]]
-      $game_map.setup_map_animation(skill.nil? ? 0 : skill.animation_id, target.x, target.y, @direction) 
-      real_name = @character_name + "/" + animation_name
-      frames = FRAMES[real_name]
-      if (frames.nil?)
-        real_name = @character_name
-        frames = DEFAULT_FRAMES
+      if sequence[1] != 88 # 'Bow and arrow' skill
+        animation_name = sequence[2]
+        skill = $data_skills[sequence[1]]
+        $game_map.setup_map_animation(skill.nil? ? 0 : skill.animation_id, target.x, target.y, @direction) 
+        real_name = @character_name + "/" + animation_name
+        frames = FRAMES[real_name]
+        if (frames.nil?)
+          real_name = @character_name
+          frames = DEFAULT_FRAMES
+        end
+        @abs_animation.setup(real_name, frames, false, true, @character_index)
+        attack(target, (DAMAGE_FRAME[real_name].nil? ? DEFAULT_DAMAGE_FRAME : DAMAGE_FRAME[real_name]))
+      else # We can assume it's the 'Bow and arrow' skill
+        turn_toward_char(target)
+        if (use_skill($data_skills[sequence[1]], sequence[3], false))
+          @abs_wait = setup_animation(sequence[2])
+        end
       end
-      @abs_animation.setup(real_name, frames)
-      attack(target, (DAMAGE_FRAME[real_name].nil? ? DEFAULT_DAMAGE_FRAME : DAMAGE_FRAME[real_name]))
     else
-      @abs_animation.setup(@character_name, DEFAULT_FRAMES)
+      @abs_animation.setup(@character_name, DEFAULT_FRAMES, false, true, @character_index)
       attack(target, DEFAULT_DAMAGE_FRAME)
     end
   end
@@ -302,8 +309,9 @@ class Game_Follower < Game_Character
     nx = x
     ny = y
     moves_finished = 0
+    direction = $game_player.direction
     if in_caterpillar_position
-      case $game_player.direction
+      case direction
       when 2
         ny -= number_in_line
       when 4
