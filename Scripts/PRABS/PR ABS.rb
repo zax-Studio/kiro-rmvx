@@ -1221,8 +1221,9 @@ class ABSTrigger
   
   include PRABS::SEQUENCE::BUTTONS
   include PRABS::CONFIG::BUTTONS
+  include Input
   
-  VERIFY_SEQUENCES = Win32API.new("PRABS.dll", "VerifyABSSequences", "lliiii", "i")
+  VERIFY_SEQUENCES = Win32API.new(ROUTE, "VerifyABSSequences", "lliiii", "i")
   
   #-----------------------------------------------------------------------------
   # - Váriaveis de acesso
@@ -2342,8 +2343,9 @@ end
 class Game_Character
   
   include PRABS::CONFIG::ANIMATION
+  include Input
   
-  INSIDE_CHECK = Win32API.new("PRABS.dll", "InsideType", "iiiiiii", "i")
+  INSIDE_CHECK = Win32API.new(ROUTE, "InsideType", "iiiiiii", "i")
   
   #--------------------------------------------------------------------------
   # ● Váriáveis de acessos
