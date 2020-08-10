@@ -74,7 +74,7 @@ Andrés Rondón
 
 <h>Gráficos
 Andrés Rondón
-Delio Diaz
+Delio Díaz
 RTP VX
 RTP XP
 Hobinicus - Pantalla de Titulo
@@ -116,7 +116,7 @@ Desconocido:
  -Party Caterpillar
 
 <h>Testeo
-María Rodriguez
+María Rodríguez
 Miguel Miguel
 Edward Suriel
 Erick Rondón
