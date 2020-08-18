@@ -72,11 +72,18 @@ Credit= <<_MAP_CREDIT_
 <h>Historia
 Andrés Rondón
 
+<h>Música
+Enterbrain (RTP VX)
+Alexandr Zhelanov - A Darkness Opus
+bart - The Adventure Begins (orchestral remix of Little Town)
+Mathew Pablo - Woodland Fantasy
+remaxim - Old City Theme
+Paulius Jurgelevieus - The Field Of Dreams
+
 <h>Gráficos
 Andrés Rondón
 Delio Díaz
-RTP VX
-RTP XP
+Enterbrain (RTP VX y RTP XP)
 Hobinicus - Pantalla de Titulo
 Techie de rpgmakervx.net - Pantalla de “GameOver”
 
@@ -87,7 +94,7 @@ Andrés Rondón
 Andrés Rondón
 
 PRCoders y poccil:
- -PR ABS
+ -PR ABS 2.0
 
 KGC's:
  -Title Dierection
@@ -118,8 +125,6 @@ Desconocido:
 <h>Testeo
 María Rodríguez
 Miguel Miguel
-Edward Suriel
-Erick Rondón
 
 <h>Gracias especiales
 Enterbrain
