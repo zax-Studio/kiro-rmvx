@@ -88,10 +88,12 @@ class Scene_Menu < Scene_Base
       case @command_window.index
       when 0      # Item
         $scene = Scene_Item.new
-      when 1,2,3  # Skill, equipment, status
+      when 1
+        $scene = Scene_Skill.new(nil) # nil so that it defaults to Kiro's ID
+      when 2,3  # Equipment, status
         start_actor_selection
-      when 4      # Party
-        $scene = Scene_Party.new
+      when 4      # Save
+        $scene = Scene_File.new(true, false, false)
       when 5      # End Game
         $scene = Scene_End.new
       end

@@ -21,27 +21,25 @@ module PRABS::CONFIG::ANIMATION
   
   # Animations Frames
   # Frames de Kiro
-  FRAMES["$016-Thief01/FrontAttack"] = 6
-  FRAMES["$016-Thief01/FrontFrontAttack"] = 6
+  FRAMES["$Kiro/FrontAttack"] = 4
+  FRAMES["$Kiro/FrontFrontAttack"] = 4
+  FRAMES["$Kiro/Pickaxe"] = 4
   # Frames de Nick
-  FRAMES["$001-Fighter01/FrontAttack"] = 6
-  FRAMES["$001-Fighter01/FrontFrontAttack"] = 6
-  FRAMES["$001-Fighter01/Arco"] = 6
+  FRAMES["$Nick/Arco"] = 4
   # Frames de Jezameni
-  FRAMES["$Yoskut/FrontAttack"] = 6
-  FRAMES["$Yoskut/FrontFrontAttack"] = 4
-  FRAMES["$Yoskut/Arco"] = 6
+  FRAMES["$Jezameni/FrontAttack"] = 4
+  FRAMES["$Jezameni/FrontFrontAttack"] = 4
   
   # Damage Frame
   # Damage Frames de Kiro
-  DAMAGE_FRAME["$016-Thief01/FrontAttack"] = 4
-  DAMAGE_FRAME["$016-Thief01/FrontFrontAttack"] = 4
+  DAMAGE_FRAME["$Kiro/FrontAttack"] = 3
+  DAMAGE_FRAME["$Kiro/FrontFrontAttack"] = 4
+  DAMAGE_FRAME["$Kiro/Pickaxe"] = 3
   # Damage Frames de Nick
-  DAMAGE_FRAME["$001-Fighter01/FrontAttack"] = 4
-  DAMAGE_FRAME["$001-Fighter01/FrontFrontAttack"] = 4
+  DAMAGE_FRAME["$Nick/Arco"] = 4
   # Damage Frames de Jezameni
-  DAMAGE_FRAME["$Yoskut/FrontAttack"] = 4
-  DAMAGE_FRAME["$Yoskut/FrontFrontAttack"] = 4
+  DAMAGE_FRAME["$Jezameni/FrontAttack"] = 3
+  DAMAGE_FRAME["$Jezameni/FrontFrontAttack"] = 4
   
   # Enemy - Attacking
   FRAMES["$051-Undead01/Attack"] = 7

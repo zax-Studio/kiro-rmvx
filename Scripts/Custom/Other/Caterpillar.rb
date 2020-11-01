@@ -1,65 +1,3 @@
-class Game_Player
-  #--------------------------------------------------------------------------
-  # * Move Down
-  # turn_enabled : a flag permits direction change on that spot
-  #--------------------------------------------------------------------------
-  def move_down(turn_enabled = true)
-    super(turn_enabled)
-  end
-
-  #--------------------------------------------------------------------------
-  # * Move Left
-  # turn_enabled : a flag permits direction change on that spot
-  #--------------------------------------------------------------------------
-  def move_left(turn_enabled = true)
-    super(turn_enabled)
-  end
-
-  #--------------------------------------------------------------------------
-  # * Move Right
-  # turn_enabled : a flag permits direction change on that spot
-  #--------------------------------------------------------------------------
-  def move_right(turn_enabled = true)
-    super(turn_enabled)
-  end
-
-  #--------------------------------------------------------------------------
-  # * Move up
-  # turn_enabled : a flag permits direction change on that spot
-  #--------------------------------------------------------------------------
-  def move_up(turn_enabled = true)
-    super(turn_enabled)
-  end
-
-  #--------------------------------------------------------------------------
-  # * Move Lower Left
-  #--------------------------------------------------------------------------
-  def move_lower_left
-    super
-  end
-
-  #--------------------------------------------------------------------------
-  # * Move Lower Right
-  #--------------------------------------------------------------------------
-  def move_lower_right
-    super
-  end
-
-  #--------------------------------------------------------------------------
-  # * Move Upper Left
-  #--------------------------------------------------------------------------
-  def move_upper_left
-    super
-  end
-
-  #--------------------------------------------------------------------------
-  # * Move Upper Right
-  #--------------------------------------------------------------------------
-  def move_upper_right
-    super
-  end
-end
-
 class Game_Follower < Game_Character
   #--------------------------------------------------------------------------
   # * Public Instance Variables
@@ -73,8 +11,8 @@ class Game_Follower < Game_Character
   
   def initialize(actor)
     super()
-    @through = false
-    @priority_type = 1
+    @through = true
+    @priority_type = 0
     @actor = actor
     trick_caterpillar_follower_initialize
     setup if actor != nil
@@ -97,12 +35,14 @@ class Game_Follower < Game_Character
       @character_name = @battler.character_name
       @character_index = @battler.character_index
     else
+      @battler = nil
       @character_name = ""
       @character_index = 0
     end
     @opacity = 255
     @blend_type = 0
-    @priority_type = 0
+    @through = false
+    @priority_type = 1
   end
 
   #--------------------------------------------------------------------------
@@ -156,7 +96,7 @@ class Game_Party
   # * Constants
   #--------------------------------------------------------------------------
   MAX_SIZE = 4
-  CATERPILLAR = 149
+  HIDE_CATERPILLAR = 40
   #--------------------------------------------------------------------------
   # * Public Instance Variables
   #--------------------------------------------------------------------------
@@ -176,17 +116,32 @@ class Game_Party
   # * Update Followers
   #--------------------------------------------------------------------------
   def update_followers
-    flag = $game_player.transparent || $game_switches[CATERPILLAR]
-    @followers.each_with_index do |char, i|
+    flag = $game_player.transparent || $game_switches[HIDE_CATERPILLAR]
+    @followers.each_with_index do |follower, i|
+      follower.actor = @actors[i + 1]
       next if i >= @actors.length - 1
-      char.actor = @actors[i + 1]
-      char.move_speed = $game_player.move_speed
+      follower.move_speed = $game_player.move_speed
       if $game_player.dash?
-        char.move_speed += 1
+        follower.move_speed += 1
       end
-      char.update
-      char.transparent = flag
+      follower.update
+      follower.transparent = flag
     end
+  end
+
+  def move_followers
+    @followers.reverse.each_with_index do |follower, i|
+      follower_index = @followers.length - 1 - i
+      chase_preceding_character(follower, follower_index)
+    end
+  end
+
+  def chase_preceding_character(follower, index)
+    return if !follower.is_inline || follower.is_fighting
+    preceding_character = index > 0 ? @followers[index - 1] : $game_player
+    sx = follower.distance_x_from_char(preceding_character)
+    sy = follower.distance_y_from_char(preceding_character)
+    follower.walkto(sx, sy, true)
   end
 
   #--------------------------------------------------------------------------
@@ -216,33 +171,39 @@ class Game_Party
   #--------------------------------------------------------------------------
   def move_party
     return unless @following_leader
-    @move_list.each_index do |i|
-      follower = @followers[i]
-      if follower == nil
-        @move_list[i...@move_list.size] = nil
-        next
+    @use_move_list = 0 if @use_move_list.nil?
+    if @use_move_list > 0
+      @move_list.each_index do |i|
+        follower = @followers[i]
+        if follower == nil
+          @move_list[i...@move_list.size] = nil
+          next
+        end
+        next if !follower.is_inline || follower.is_walking || follower.is_fighting
+        case @move_list[i].type
+        when 2
+          follower.move_down(*@move_list[i].args)
+        when 4
+          follower.move_left(*@move_list[i].args)
+        when 6
+          follower.move_right(*@move_list[i].args)
+        when 8
+          follower.move_up(*@move_list[i].args)
+        when 1
+          follower.move_lower_left
+        when 3
+          follower.move_lower_right
+        when 7
+          follower.move_upper_left
+        when 9
+          follower.move_upper_right
+        when 5
+          follower.jump(*@move_list[i].args)
+        end
       end
-      next if !follower.is_inline || follower.is_walking
-      case @move_list[i].type
-      when 2
-        follower.move_down(*@move_list[i].args)
-      when 4
-        follower.move_left(*@move_list[i].args)
-      when 6
-        follower.move_right(*@move_list[i].args)
-      when 8
-        follower.move_up(*@move_list[i].args)
-      when 1
-        follower.move_lower_left
-      when 3
-        follower.move_lower_right
-      when 7
-        follower.move_upper_left
-      when 9
-        follower.move_upper_right
-      when 5
-        follower.jump(*@move_list[i].args)
-      end
+      @use_move_list -= 1
+    else
+      move_followers
     end
   end
 
@@ -251,8 +212,9 @@ class Game_Party
   #--------------------------------------------------------------------------
   def update_move(type, *args)
     if @regroup_on_next_move_flag || (@refollow_on_next_move_flag && type != @followers[0].direction)
-      moveto_party($game_player.x, $game_player.y, false, false, true)
+      moveto_party($game_player.x, $game_player.y, false, true, true)
     end
+
     if @refollow_on_next_move_flag || @regroup_on_next_move_flag
       @followers.each_index do |i|
         @move_list.unshift(Game_MoveListElement.new(type, args))
@@ -260,38 +222,26 @@ class Game_Party
       @refollow_on_next_move_flag = false
       @regroup_on_next_move_flag = false
     end
+
     move_party
     @move_list.unshift(Game_MoveListElement.new(type, args))
-  end
 
-  def duplicate_previous_move(follower_index)
-    if follower_index > 0
-      @move_list[follower_index] = @move_list[follower_index - 1]
+    if type == 5
+      @use_move_list = @actors.length - 1
     end
   end
 end
 
 class Game_MoveListElement
+  attr_reader :type
+  attr_reader :args
+
   #--------------------------------------------------------------------------
   # * Object Initialization
   #--------------------------------------------------------------------------
   def initialize(type, args)
     @type = type
     @args = args
-  end
-
-  #--------------------------------------------------------------------------
-  # * Type
-  #--------------------------------------------------------------------------
-  def type
-    return @type
-  end
-
-  #--------------------------------------------------------------------------
-  # * Args
-  #--------------------------------------------------------------------------
-  def args
-    return @args
   end
 end
 
@@ -324,110 +274,92 @@ class Game_Player
   #--------------------------------------------------------------------------
   # * Move Down
   #--------------------------------------------------------------------------
-  alias_method :trick_caterpillar_player_move_down, :move_down
-
   def move_down(turn_enabled = true)
     if passable?(@x, @y + 1)
       $game_party.update_move(2, turn_enabled)
     end
-    trick_caterpillar_player_move_down(turn_enabled)
+    super
   end
 
   #--------------------------------------------------------------------------
   # * Move Left
   #--------------------------------------------------------------------------
-  alias_method :trick_caterpillar_player_move_left, :move_left
-
   def move_left(turn_enabled = true)
     if passable?(@x - 1, @y)
       $game_party.update_move(4, turn_enabled)
     end
-    trick_caterpillar_player_move_left(turn_enabled)
+    super
   end
 
   #--------------------------------------------------------------------------
   # * Move Right
   #--------------------------------------------------------------------------
-  alias_method :trick_caterpillar_player_move_right, :move_right
-
   def move_right(turn_enabled = true)
     if passable?(@x + 1, @y)
       $game_party.update_move(6, turn_enabled)
     end
-    trick_caterpillar_player_move_right(turn_enabled)
+    super
   end
 
   #--------------------------------------------------------------------------
   # * Move Up
   #--------------------------------------------------------------------------
-  alias_method :trick_caterpillar_player_move_up, :move_up
-
   def move_up(turn_enabled = true)
     if passable?(@x, @y - 1)
       $game_party.update_move(8, turn_enabled)
     end
-    trick_caterpillar_player_move_up(turn_enabled)
+    super
   end
 
   #--------------------------------------------------------------------------
   # * Move Lower Left
   #--------------------------------------------------------------------------
-  alias_method :trick_caterpillar_player_move_lower_left, :move_lower_left
-
   def move_lower_left
     if passable?(@x - 1, @y) and passable?(@x, @y + 1)
       $game_party.update_move(1)
     end
-    trick_caterpillar_player_move_lower_left
+    super
   end
 
   #--------------------------------------------------------------------------
   # * Move Lower Right
   #--------------------------------------------------------------------------
-  alias_method :trick_caterpillar_player_move_lower_right, :move_lower_right
-
   def move_lower_right
     if passable?(@x + 1, @y) and passable?(@x, @y + 1)
       $game_party.update_move(3)
     end
-    trick_caterpillar_player_move_lower_right
+    super
   end
 
   #--------------------------------------------------------------------------
   # * Move Upper Left
   #--------------------------------------------------------------------------
-  alias_method :trick_caterpillar_player_move_upper_left, :move_upper_left
-
   def move_upper_left
     if passable?(@x - 1, @y) and passable?(@x, @y - 1)
       $game_party.update_move(7)
     end
-    trick_caterpillar_player_move_upper_left
+    super
   end
 
   #--------------------------------------------------------------------------
   # * Move Upper Right
   #--------------------------------------------------------------------------
-  alias_method :trick_caterpillar_player_move_upper_right, :move_upper_right
-
   def move_upper_right
     if passable?(@x + 1, @y) and passable?(@x, @y - 1)
       $game_party.update_move(9)
     end
-    trick_caterpillar_player_move_upper_right
+    super
   end
 
   #--------------------------------------------------------------------------
   # * Jump
   #--------------------------------------------------------------------------
-  alias_method :trick_caterpillar_player_jump, :jump
-
   def jump(x_plus, y_plus)
     new_x = @x + x_plus
     new_y = @y + y_plus
     if (x_plus == 0 and y_plus == 0) or passable?(new_x, new_y)
       $game_party.update_move(5, x_plus, y_plus)
     end
-    trick_caterpillar_player_jump(x_plus, y_plus)
+    super
   end
 end

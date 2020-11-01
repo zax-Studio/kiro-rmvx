@@ -106,54 +106,53 @@ module PRABS::SEQUENCE
   # Setting these sequences to hero 1, weapon 1, combo 0 (all combos)
    # Armas de Kiro
   PRABS::HERO.add_sequence(9, 2, 0, data)
+  PRABS::HERO.add_sequence(9, 6, 0, data)
   PRABS::HERO.add_sequence(9, 10, 0, data)
+  PRABS::HERO.add_sequence(9, 13, 0, data)
   PRABS::HERO.add_sequence(9, 16, 0, data)
+  PRABS::HERO.add_sequence(9, 21, 0, data)
+  PRABS::HERO.add_sequence(9, 29, 0, data)
   PRABS::HERO.add_sequence(9, 30, 0, data)
-   # Armas de Nick
-  PRABS::HERO.add_sequence(1, 2, 0, data)
-  PRABS::HERO.add_sequence(1, 10, 0, data)
-  PRABS::HERO.add_sequence(1, 16, 0, data)
-  PRABS::HERO.add_sequence(1, 29, 0, data)
+  PRABS::HERO.add_sequence(9, 33, 0, data)
   
   # Setting the Max combo to hero 1, weapon 1, max combo 5, delay 60 frames
    # Max combos de Kiro
   PRABS::HERO.set_combo_max(9, 2, 3, 60)
+  PRABS::HERO.set_combo_max(9, 6, 3, 60)
   PRABS::HERO.set_combo_max(9, 10, 5, 60)
+  PRABS::HERO.set_combo_max(9, 13, 5, 60)
   PRABS::HERO.set_combo_max(9, 16, 5, 60)
-  PRABS::HERO.set_combo_max(9, 30, 7, 60)
-   # Max combos de Nick
-  PRABS::HERO.set_combo_max(1, 2, 5, 60)
-  PRABS::HERO.set_combo_max(1, 10, 5, 60)
-  PRABS::HERO.set_combo_max(1, 16, 5, 60)
-  PRABS::HERO.set_combo_max(1, 29, 7, 60)
+  PRABS::HERO.set_combo_max(9, 21, 5, 60)
+  PRABS::HERO.set_combo_max(9, 29, 7, 30)
+  PRABS::HERO.set_combo_max(9, 30, 4, 60)
+  PRABS::HERO.set_combo_max(9, 33, 1, 10)
   
 #===============================================================================
 # Bow
 #===============================================================================
 
   data = [
-    [SEQUENCES["a"], 88, "Arco", 0, false]
+    [SEQUENCES["a"], 88, "Arco", 20, false, 2] # F: Offset of distance to attack
   ]
 
   # Setting these sequences to hero 1, weapon 2, combo 0 (all combos)
-  # Arma 1 de Jezameni
-  PRABS::HERO.add_sequence(2, 4, 0, data)
-  PRABS::HERO.add_sequence(2, 17, 0, data)
-  PRABS::HERO.add_sequence(2, 24, 0, data)
-  # Arma 2 de Nick
+  # Arma de Nick
   PRABS::HERO.add_sequence(1, 4, 0, data)
+  PRABS::HERO.add_sequence(1, 11, 0, data)
+
+  data = [
+    [SEQUENCES["a"], 88, "Arco", 20, false, 3] # F: Offset of distance to attack
+  ]
+
   PRABS::HERO.add_sequence(1, 17, 0, data)
   PRABS::HERO.add_sequence(1, 24, 0, data)
 
   # Setting the Max combo to hero 1, weapon 2, max combo 1, delay 20 frames
   
   PRABS::HERO.set_combo_max(1, 4, 1, 20)
-  PRABS::HERO.set_combo_max(1, 17, 2, 20)
-  PRABS::HERO.set_combo_max(1, 24, 3, 20)
-  
-  PRABS::HERO.set_combo_max(2, 4, 1, 20)
-  PRABS::HERO.set_combo_max(2, 17, 2, 20)
-  PRABS::HERO.set_combo_max(2, 24, 3, 20)
+  PRABS::HERO.set_combo_max(1, 11, 2, 20)
+  PRABS::HERO.set_combo_max(1, 17, 3, 20)
+  PRABS::HERO.set_combo_max(1, 24, 4, 20)
   
 #===============================================================================
 # Spear
@@ -163,17 +162,41 @@ module PRABS::SEQUENCE
     # Normal Attack, Image "Graphics/Characters/CharName + FrontAttack", delay 0, Continue the combo
     [SEQUENCES["a"], 0, "FrontAttack", 0, false],
     # Front + Attack Button, Image "Graphics/Characters/CharName + FrontAttack", delay 0, Continue the combo
-    [SEQUENCES["fa"], 84, "FrontFrontAttack", 60, false]
+    [SEQUENCES["fa"], 84, "FrontAttack", 0, false],
+    [SEQUENCES["ffa"], 91, "FrontFrontAttack", 0, true]
   ]
 
-   # Arma 2 de Jezameni
+   # Arma de Jezameni
   PRABS::HERO.add_sequence(2, 3, 0, data)
+  PRABS::HERO.add_sequence(2, 9, 0, data)
+  PRABS::HERO.add_sequence(2, 14, 0, data)
   PRABS::HERO.add_sequence(2, 20, 0, data)
   PRABS::HERO.add_sequence(2, 27, 0, data)
 
   # Max combo de Jezameni
-  PRABS::HERO.set_combo_max(2, 3, 3, 20)
+  PRABS::HERO.set_combo_max(2, 3, 3, 30)
   PRABS::HERO.set_combo_max(2, 20, 4, 20)
-  PRABS::HERO.set_combo_max(2, 27, 5, 20)
+  PRABS::HERO.set_combo_max(2, 27, 5, 15)
+
+#===============================================================================
+# Pickaxe
+#===============================================================================
+
+data = [
+  # Normal Attack, Image "Graphics/Characters/CharName + Pickaxe", delay 0, Continue the combo
+  [SEQUENCES["a"], 0, "Pickaxe", 0, false],
+  # Front + Attack Button, Image "Graphics/Characters/CharName + Pickaxe", delay 0, Continue the combo
+  [SEQUENCES["fa"], 0, "Pickaxe", 0, false]
+]
+
+# Pico
+PRABS::HERO.add_sequence(9, 33, 0, data)
+PRABS::HERO.add_sequence(1, 33, 0, data)
+PRABS::HERO.add_sequence(2, 33, 0, data)
+
+# Max combo para Pico
+PRABS::HERO.set_combo_max(9, 33, 1, 20)
+PRABS::HERO.set_combo_max(1, 33, 1, 20)
+PRABS::HERO.set_combo_max(2, 33, 1, 20)
   
 end

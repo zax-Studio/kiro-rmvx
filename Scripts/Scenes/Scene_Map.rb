@@ -106,10 +106,18 @@ class Scene_Map < Scene_Base
     $game_player.perform_transfer   # Execute player transfer
     $game_map.autoplay              # Automatically switch BGM and BGS
     $game_map.update
+    autosave
     Graphics.wait(15)
     @spriteset = Spriteset_Map.new  # Recreate sprite set
     fadein(30) if fade
     Input.update
+  end
+  
+  AUTOSAVE_SWITCH = 63
+  def autosave
+    if $game_switches[AUTOSAVE_SWITCH]
+      $save.do(1);
+    end
   end
   #--------------------------------------------------------------------------
   # * Encounter Processing
@@ -259,6 +267,7 @@ class Scene_Map < Scene_Base
   #--------------------------------------------------------------------------
   def call_title
     $game_temp.next_scene = nil
+    $keywindow.terminate unless $keywindow.nil?
     $scene = Scene_Title.new
     fadeout(60)
   end

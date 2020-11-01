@@ -85,7 +85,6 @@ Scene_Name
 Scene_Debug
 Scene_Battle
 Scene_Gameover
-Resize and Scale
 
 @PRABS
 PRCoders Module
@@ -121,9 +120,6 @@ AR - Active Party
 MRA_LocationPlayTimeWindow
 ===Misc Special Effects====~blank
 KGC_TitleDirection
-==Map&Movement System==~blank
-KGC_DayNight
-KGC_MiniMap
 ----------------------------~blank
 
 @@MOG Location
@@ -134,28 +130,19 @@ MOG_Location_Name_VX
 on-screen shop
 # ° Scripts on Map   #~blank
 Map credit
-Lock Screen
 Wora - Advance Scroll Map
 # ° Scripts in Battle   #~blank
 level up recovery
-# ° Maker's Tools    #~blank
-Auto Backup
 # ° Misc.    #~blank
-Call Event VX
 Gradient Bug Fix
 Animation Bug Fixed
 Quick Save & Load & Delete
 Neo Save System
 ----------------------------~blank
 @@Other
-Prexus - Party Manager
-
 game over menu
-
 Hide Item
-
 Caterpillar
-
 Window_Keys
 @Main Process
 @

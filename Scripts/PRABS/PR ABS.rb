@@ -131,7 +131,7 @@ module Input
   
   A = Letters["C"]
   B = [Letters["X"], Esc]
-  C = [Space, Enter]
+  C = [Letters["Z"], Space, Enter]
   X = Letters["A"]
   Y = Letters["S"]
   Z = Letters["D"]
@@ -142,9 +142,14 @@ module Input
   # * Métodos da DLL
   #-------------------------------------------------------------------------- 
   
-  ROUTE = "PRABS.dll" # DLL to C
-  #ROUTE = "DLL\\PRABS.dll" # original
-  UPDATE = Win32API.new(ROUTE, "UpdateInputArray", "lllll", "")
+  ROUTE = "DLL\\PRABS.dll" # original
+  ROUTE_NEW = "PRABS.dll" # DLL to C
+  begin
+    UPDATE = Win32API.new(ROUTE, "UpdateInputArray", "lllll", "")
+  rescue
+    ROUTE = ROUTE_NEW
+    UPDATE = Win32API.new(ROUTE, "UpdateInputArray", "lllll", "")    
+  end
   ADDKEY = Win32API.new(ROUTE, "InputAddUsedKey", "i", "")
 
   #--------------------------------------------------------------------------
@@ -463,21 +468,8 @@ class Game_Character
         return true if event.priority_type == 1   
       end
     end
-    if PRCoders.logged_and_loaded?("Catterpillar")
-      unless PR_CATTERPILLAR::PARTY_TYPE == 0
-        for actor in $game_train_actors.party_actors
-          return true if actor.pos_nt?(x, y)
-        end
-      end
-    end
-    if @priority_type == 1      
-      if PRCoders.logged_and_loaded?("Catterpillar")
-        if $game_player.pos_nt?(x, y) and !self.is_a?(Game_Train_Actor)
-          return true
-        end     
-      else
-        return true if $game_player.pos_nt?(x, y)
-      end
+    if @priority_type == 1
+      return true if $game_player.pos_nt?(x, y)
       return true if $game_map.boat.pos_nt?(x, y)   # ?????????
       return true if $game_map.ship.pos_nt?(x, y)   # ?????????
     end
@@ -489,8 +481,8 @@ class Game_Character
   #--------------------------------------------------------------------------
   
   def passable?(x, y)
-    x = $game_map.round_x(x)                    
-    y = $game_map.round_y(y)                  
+    x = $game_map.round_x(x)
+    y = $game_map.round_y(y)
     return false unless $game_map.valid?(x, y)
     return true if (@through or debug_through?)
     return false unless map_passable?(x, y)
@@ -500,6 +492,19 @@ class Game_Character
       return false if collide_with_characters?(x, y)
     end
     return true                                     
+  end
+
+  def jumpable?(x, y)
+    x = $game_map.round_x(x)
+    y = $game_map.round_y(y)
+    tile_id = $game_map.get_tile_id(x, y, 0)
+    if tile_id != nil        # タイル ID 取得失敗 : 通行不可
+      return true if $game_map.tile_waters?(tile_id)
+    end
+    for event in $game_map.screen_events_xy(x, y)
+      return true if event.jumpable
+    end
+    return false
   end
   
 end
@@ -844,16 +849,27 @@ end
 
 module PRABS
   
+  module UTILS
+    def self.has_dollar_sign?(character_name)
+      sign = character_name[/^[\!\$]./]
+      return (sign != nil && sign.include?('$'))
+    end
+  end
+
   module CONFIG
       
     module ANIMATION
         
       DELAY = 2
-      DEFAULT_FRAMES = 4  
-      DEFAULT_DAMAGE_FRAME = 0 
+      DEFAULT_FRAMES = 3
+      DEFAULT_DAMAGE_FRAME = 3
       
       FRAMES = {}
-      DAMAGE_FRAME = {}   
+      DAMAGE_FRAME = {}
+
+      def self.get_default_frames(character_name)
+        return PRABS::UTILS.has_dollar_sign?(character_name) ? 3 : 12
+      end
     end
     
     module ENEMY
@@ -862,6 +878,8 @@ module PRABS
       ENEMIES_ATTACK = {}
       SKILL_ENEMIES = {}
       COMBO_ENEMIES = {}
+
+      DEFAULT_ANIMATION_ATTACK_ID = 0
       
       def self.get_animation_attack(enemy_id, combo_index)
         anim = ENEMIES[[enemy_id, combo_index]]
@@ -873,13 +891,19 @@ module PRABS
       def self.get_animation_attack_id(enemy_id, combo_index)
         anim = ENEMIES_ATTACK[[enemy_id, combo_index]]
         anim ||= ENEMIES_ATTACK[[enemy_id, 0]]
-        anim ||= 0
+        anim ||= DEFAULT_ANIMATION_ATTACK_ID
         return anim
       end
       
       def self.setup_attack_enemy_animation(enemy_id, combo_index, animation_name, animation_id)
-        ENEMIES[[enemy_id, combo_index]] = animation_name.dup
-        ENEMIES_ATTACK[[enemy_id, combo_index]] = animation_id
+        if (enemy_id.is_a?(Array))
+          for id in enemy_id
+            self.setup_attack_enemy_animation(id, combo_index, animation_name, animation_id)
+          end
+        else
+          ENEMIES[[enemy_id, combo_index]] = animation_name.dup
+          ENEMIES_ATTACK[[enemy_id, combo_index]] = animation_id
+        end
       end
       
       def self.setup_attack_combo_max(enemy_id, combo_max)
@@ -1076,11 +1100,18 @@ class ABSAnimation
   # - Define a animação
   #-----------------------------------------------------------------------------
   
-  def setup(name, frames, loop = false, play = true)
+  def setup(name, frames, loop = false, play = true, character_index = 0)
     @no_image = (name == "")
     @name = name.dup
     @frames = frames
     @index = 0
+    @character_index = character_index
+    if @frames == 12 && @character_index > 0
+      if @character_index >= 4
+        @character_index -= 4
+      end
+      @index = @character_index * 3
+    end
     @play = play
     @active = true
     unless @play
@@ -1101,7 +1132,7 @@ class ABSAnimation
     if @play
       if @index < @frames
         @index += 1
-        if (@index >= @frames)
+        if (@index >= @frames) || (@frames == 12 && @index >= (@character_index + 1) * 3)
           if (@loop)
             @index = 0
             return
@@ -1190,8 +1221,9 @@ class ABSTrigger
   
   include PRABS::SEQUENCE::BUTTONS
   include PRABS::CONFIG::BUTTONS
+  include Input
   
-  VERIFY_SEQUENCES = Win32API.new("PRABS.dll", "VerifyABSSequences", "lliiii", "i")
+  VERIFY_SEQUENCES = Win32API.new(ROUTE, "VerifyABSSequences", "lliiii", "i")
   
   #-----------------------------------------------------------------------------
   # - Váriaveis de acesso
@@ -1861,9 +1893,10 @@ class ABS_Event < Game_Event
   def hit_target(s, target)
     if (@type == 0)
       if (target.direction == (10 - @direction))
-        if target.player_attacker?
-          reflect = PRABS::CONFIG::DATABASE::REFLECT_SHIELDS[target.battler.armor1_id].include?(1)
-          reflect |= PRABS::CONFIG::DATABASE::REFLECT_SHIELDS[target.battler.armor1_id].include?(@type_id)
+        reflect_shield = PRABS::CONFIG::DATABASE::REFLECT_SHIELDS[target.battler.armor1_id]
+        if target.player_attacker? && !reflect_shield.nil?
+          reflect = reflect_shield.include?(1) 
+          reflect |= reflect_shield.include?(@type_id)
           if (target.shielded && reflect)
             set_direction(10 - @direction)
             @x = (@real_x / 256.0).round
@@ -2269,8 +2302,6 @@ class Game_Actor < Game_Battler
 end
 #==============================================================================
 # ABS_Target
-#------------------------------------------------------------------------------
-# Superclasse ABS_Target
 #==============================================================================
 
 class ABS_Target
@@ -2283,8 +2314,6 @@ class ABS_Target
 end
 #==============================================================================
 # ABS_Targets
-#------------------------------------------------------------------------------
-# Superclasse ABS_Targets
 #==============================================================================
 
 class ABS_Targets
@@ -2314,8 +2343,9 @@ end
 class Game_Character
   
   include PRABS::CONFIG::ANIMATION
+  include Input
   
-  INSIDE_CHECK = Win32API.new("PRABS.dll", "InsideType", "iiiiiii", "i")
+  INSIDE_CHECK = Win32API.new(ROUTE, "InsideType", "iiiiiii", "i")
   
   #--------------------------------------------------------------------------
   # ● Váriáveis de acessos
@@ -2339,6 +2369,8 @@ class Game_Character
   attr_accessor :last_action_type
   attr_accessor :last_action
   attr_accessor :attacked_by
+  attr_accessor :permanent_balloon_id
+  attr_reader   :fake_enemy
 
   #--------------------------------------------------------------------------
   # ● Alias
@@ -2377,6 +2409,9 @@ class Game_Character
     pr_abs_game_character_initialize
 
     @abs_target = ABS_Target.new(nil, 99)
+    @permanent_balloon_id = 0
+
+    @enemy = false
   end
   
   def get_dist(character)
@@ -2433,43 +2468,55 @@ class Game_Character
   #--------------------------------------------------------------------------
   
   def walkto(sx, sy, force_movement = false)
-    if sx.abs > sy.abs                  # 横の距離のほうが長い
-      sx > 0 ? move_left : move_right   # 左右方向を優先
-      if @move_failed
-        if sy != 0
-          sy > 0 ? move_up : move_down
-          if @move_failed && force_movement
+    if sx != 0 || sy != 0
+      @is_walking = !force_movement
+      if sx.abs > sy.abs                  # 横の距離のほうが長い
+        sx > 0 ? move_left : move_right   # 左右方向を優先
+        if @move_failed
+          if sy != 0
+            sy > 0 ? move_up : move_down
+            if @move_failed && force_movement
+              abs_random_movement
+              @move_failed = true
+            end
+          elsif force_movement
             abs_random_movement
             @move_failed = true
           end
-        elsif force_movement
-          abs_random_movement
-          @move_failed = true
         end
-      end
-    else                                # 縦の距離のほうが長いか等しい
-      sy > 0 ? move_up : move_down      # 上下方向を優先
-      if @move_failed 
-        if sx != 0
-          sx > 0 ? move_left : move_right
-          if @move_failed && force_movement
+      else                                # 縦の距離のほうが長いか等しい
+        sy > 0 ? move_up : move_down      # 上下方向を優先
+        if @move_failed 
+          if sx != 0
+            sx > 0 ? move_left : move_right
+            if @move_failed && force_movement
+              abs_random_movement
+              @move_failed = true
+            end
+          elsif force_movement
             abs_random_movement
             @move_failed = true
           end
-        elsif force_movement
-          abs_random_movement
-          @move_failed = true
         end
       end
+      return unless @move_failed || (sx.abs + sy.abs) == 1
     end
+    
+    @is_walking = false
   end
 
-  def move_toward_character(char, force_movement = false)
-    sx = distance_x_from_char(char)
-    sy = distance_y_from_char(char)
-    if sx != 0 or sy != 0
-      walkto(sx, sy, force_movement)
+  def move_toward_character(char, force_movement = false, offset_x = 0)
+    turn_toward_char(@abs_target.character) if offset_x != 0
+    if offset_x == 0
+      sx = distance_x_from_char(char)
+    else
+      sx_from_up = distance_x_from_target(char.x - offset_x)
+      sx_from_down = distance_x_from_target(char.x + offset_x)
+      sx = sx_from_up.abs < sx_from_down.abs ? sx_from_up : sx_from_down
     end
+    sy = distance_y_from_char(char)
+    
+    walkto(sx, sy, force_movement)
   end
 
   def abs_random_movement
@@ -2489,6 +2536,58 @@ class Game_Character
     @hudded_ballon = true
     @hudded_ballon_x = @x
     @hudded_ballon_y = @y
+  end
+
+  #--------------------------------------------------------------------------
+  # ● Use Skill
+  #--------------------------------------------------------------------------
+
+  def use_skill(skill, delay = 0, animation = true)
+    @last_action_type = 1
+    @last_action = skill
+    return false if skill.nil? || @battler.nil?
+    $game_temp.in_battle = true
+    unless @battler.abs_skill_can_use?(skill, !@enemy)
+      $game_temp.in_battle = false
+      Sound.play_buzzer
+      return false
+    end
+    $game_temp.in_battle = false
+    @battler.mp -= skill.mp_cost
+    data = PRABS::CONFIG::DATABASE.get_skill(skill.id)
+    a_name = data[3].nil? ? "" : data[3]
+    setup_animation(data[3].nil? ? "" : data[3]) if animation
+    @battler.used_skill(skill)
+    if (data[2] == PRABS::CONFIG::TYPE::SHOOT)
+      unless @enemy
+        if (!self.is_a?(Game_Follower) && data[4] != nil && data[4].size >= 2) # Consume Item
+          if ($game_party.item_number($data_items[data[4][0]]) < data[4][1])
+            Sound.play_buzzer
+            return false
+          end
+          if (data[4][2] == true)
+            $game_party.lose_item($data_items[data[4][0]], 1)
+          end
+        end
+        if (data[5] != nil) # Play animation
+          $game_map.setup_map_animation(data[5], @x, @y, @direction)
+        end
+      end
+      event = $game_map.setup_shoot_event(data[0], data[1], self, delay)
+      event.type = 0
+      event.type_id = skill.id
+      return true
+    end
+    targets = []
+    if (skill.for_user? || skill.for_friend?)
+      self.suffer_skill(self, skill, delay)
+    elsif skill.for_opponent?
+      targets = skill_area(skill)
+      for target in targets
+        @hitted |= target.suffer_skill(self, skill, delay)
+      end
+    end
+    return true
   end
   
   #--------------------------------------------------------------------------
@@ -2537,9 +2636,14 @@ class Game_Character
   #--------------------------------------------------------------------------
   
   def setup_animation(animation_name, loop = false, play = true)
+    frames = 0
     if animation_name != ""
       real_name = @character_name + "/" + animation_name
-      frames = (FRAMES[real_name].nil? ? DEFAULT_FRAMES : FRAMES[real_name])
+      frames = FRAMES[real_name]
+      if frames.nil?
+        real_name = @character_name
+        frames = PRABS::CONFIG::ANIMATION.get_default_frames(@character_name)
+      end
       @abs_animation.setup(real_name, frames, loop, play)
     else
       @abs_animation.setup("", DEFAULT_FRAMES, loop, play)
@@ -2647,6 +2751,7 @@ class Game_Character
   #--------------------------------------------------------------------------
   
   def attack(target, delay)
+    turn_toward_char(target)
     target.suffer_attack(self, delay, @direction)
   end
   
@@ -2930,7 +3035,7 @@ class Game_Character
         return true if char.pos?(x, y) && !(self.is_a?(Game_Player) || self.is_a?(Game_Follower))
       end
     end
-    if @priority_type == 1
+    if @priority_type == 1 && !self.is_a?(Game_Follower)
       unless $game_player.abs_through?(self)      
         return true if $game_player.pos_nt?(x, y)
       end
@@ -2977,6 +3082,9 @@ end
 #==============================================================================
 
 class Game_Event < Game_Character
+  include PRABS::CONFIG::ANIMATION
+
+  attr_reader :jumpable
   
   #--------------------------------------------------------------------------
   # ● Alias
@@ -3033,14 +3141,17 @@ class Game_Event < Game_Character
     front_y = $game_map.y_with_direction(@y, @direction)
     animation = $game_map.setup_map_animation(PRABS::CONFIG::ENEMY.get_animation_attack_id(@enemy_id, combo_index), front_x, front_y, @direction)
     animation_name = PRABS::CONFIG::ENEMY.get_animation_attack(@enemy_id, combo_index)
+    real_name = ""
     if animation_name != ""
       real_name = @character_name + "/" + animation_name
-      frames = (FRAMES[real_name].nil? ? DEFAULT_FRAMES : FRAMES[real_name])
-      @abs_animation.setup(real_name, frames)
+    else
+      real_name = @character_name
     end
+    frames = (FRAMES[real_name].nil? ? PRABS::CONFIG::ANIMATION.get_default_frames(@character_name) : FRAMES[real_name])
+    @abs_animation.setup(real_name, frames, false, true, @character_index)
     if $game_player.pos?(front_x, front_y)
       if $game_player.battler != nil
-        attack($game_player, (DAMAGE_FRAME[real_name].nil? ? 0 : DAMAGE_FRAME[real_name]))
+        attack($game_player, (DAMAGE_FRAME[real_name].nil? ? DEFAULT_DAMAGE_FRAME : DAMAGE_FRAME[real_name]))
       else
         attack($game_player, 0)
       end
@@ -3076,48 +3187,6 @@ class Game_Event < Game_Character
       targets = item_area(item)
       for target in targets
         @hitted |= target.suffer_item(self, item, delay)
-      end
-    end
-    return true
-  end
-
-  #--------------------------------------------------------------------------
-  # ● Habilidade
-  #--------------------------------------------------------------------------
-
-  def use_skill(skill, delay = 0, animation = true)
-    @last_action_type = 1
-    @last_action = skill
-    return false if skill.nil?
-    return false if @battler.nil?
-    if !@fake_enemy
-      @battler.unlimited_mp = @unlimited_mp
-      $game_temp.in_battle = true
-      unless (@battler.abs_skill_can_use?(skill))
-        $game_temp.in_battle = false
-        Sound.play_buzzer
-        return false
-      end
-      $game_temp.in_battle = false
-      @battler.mp -= skill.mp_cost 
-    end
-    data = PRABS::CONFIG::DATABASE.get_skill(skill.id)
-    a_name = data[3].nil? ? "" : data[3]
-    setup_animation(data[3].nil? ? "" : data[3]) if animation
-    @battler.used_skill(skill)
-    if (data[2] == PRABS::CONFIG::TYPE::SHOOT)
-      event = $game_map.setup_shoot_event(data[0], data[1], self, delay)
-      event.type = 0
-      event.type_id = skill.id
-      return true
-    end
-    targets = []
-    if (skill.for_user? || skill.for_friend?)
-      self.suffer_skill(self, skill, delay)
-    elsif skill.for_opponent?
-      targets = skill_area(skill)
-      for target in targets
-        @hitted |= target.suffer_skill(self, skill, delay)
       end
     end
     return true
@@ -3192,7 +3261,6 @@ class Game_Event < Game_Character
   def clear_abs_starting
     @battler = nil
     @enemy_id = 0
-    @enemy = false
     @clear_sprite = true
     # Acertável?
     @weapon_hittable = false
@@ -3231,6 +3299,9 @@ class Game_Event < Game_Character
     # No_Damage
     @no_damage = false
     @fake_enemy = false
+    # Jumpable
+    @jumpable = false
+    @permanent_balloon_id = 0
   end
   
   #--------------------------------------------------------------------------
@@ -3245,7 +3316,7 @@ class Game_Event < Game_Character
           @battler = Game_Enemy.new(0, $1.to_i)
           @enemy_id = $1.to_i
           @fake_enemy = true
-          @enemy = false
+          @enemy = true
         when /enemy[ ]?(\d+)/
           @battler = Game_Enemy.new(0, $1.to_i)
           @enemy_id = $1.to_i
@@ -3349,6 +3420,10 @@ class Game_Event < Game_Character
           @recover_hp_delay = @original_hp_delay = $2.to_i
         when /hud_balloon[ ]?(\d+)/
           @hud_balloon_id = $1.to_i
+        when /map_balloon[ ]?(\d+)/
+          @balloon_id = @permanent_balloon_id = $1.to_i
+        when /jumpable/
+          @jumpable = true
         end
       end
     end
@@ -3363,7 +3438,7 @@ class Game_Event < Game_Character
       if @weapon_hittable
         $game_self_switches[[@map_id, @id, "HIT"]] = true
         $game_self_switches[[@map_id, @id, "WHIT"]] = true
-        $game_self_switches[[@map_id, @id, "IHIT_ID"]] = (left_handed ? attacker.battler.armor1_id : attacker.battler.weapon_id)
+        $game_self_switches[[@map_id, @id, "WHIT_ID"]] = (left_handed ? attacker.battler.armor1_id : attacker.battler.weapon_id)
         self.refresh
         self.start
       end
@@ -3472,6 +3547,7 @@ class Game_Event < Game_Character
     super()
     @battler = nil
     $game_self_switches[[@map_id, @id, "DEAD"]] = true
+
     if (@dead_variables.size > 0 || @dead_switches.size > 0)
       for variable in @dead_variables
         $game_variables[variable] += 1
@@ -3551,36 +3627,19 @@ class Game_Event < Game_Character
   # ● Ataca o jogador
   #--------------------------------------------------------------------------
   
-  def player_attack(combo_index)
-    return if $game_player.battler.nil?
-    animation_name = PRABS::CONFIG::ENEMY.get_animation_attack(@enemy_id, combo_index)
-    $game_map.setup_map_animation(PRABS::CONFIG::ENEMY.get_animation_attack_id(@enemy_id, combo_index), $game_player.x, $game_player.y, @direction)
-    if animation_name != ""
-      real_name = @character_name + "/" + animation_name
-      frames = (FRAMES[real_name].nil? ? DEFAULT_FRAMES : FRAMES[real_name])
-      @abs_animation.setup(real_name, frames)
-      attack($game_player, (DAMAGE_FRAME[real_name].nil? ? 0 : DAMAGE_FRAME[real_name]))
-    else
-      attack($game_player, 0)
-    end
-  end
-  
-  #--------------------------------------------------------------------------
-  # ● Ataca o jogador
-  #--------------------------------------------------------------------------
-  
   def target_attack(target, combo_index)
     return if target.battler.nil?
     animation_name = PRABS::CONFIG::ENEMY.get_animation_attack(@enemy_id, combo_index)
     $game_map.setup_map_animation(PRABS::CONFIG::ENEMY.get_animation_attack_id(@enemy_id, combo_index), target.x, target.y, @direction)
+    real_name = ""
     if animation_name != ""
       real_name = @character_name + "/" + animation_name
-      frames = (FRAMES[real_name].nil? ? DEFAULT_FRAMES : FRAMES[real_name])
-      @abs_animation.setup(real_name, frames)
-      attack(target, (DAMAGE_FRAME[real_name].nil? ? 0 : DAMAGE_FRAME[real_name]))
     else
-      attack(target, 0)
+      real_name = @character_name
     end
+    frames = (FRAMES[real_name].nil? ? PRABS::CONFIG::ANIMATION.get_default_frames(@character_name) : FRAMES[real_name])
+    @abs_animation.setup(real_name, frames, false, true, @character_index)
+    attack(target, (DAMAGE_FRAME[real_name].nil? ? DEFAULT_DAMAGE_FRAME : DAMAGE_FRAME[real_name]))
   end
   
   #--------------------------------------------------------------------------
@@ -3615,9 +3674,9 @@ class Game_Event < Game_Character
         @enemy_combo[1] -= 1
         return
       end
-      dx = (@x - @abs_target.character.x).abs
-      dy = (@y - @abs_target.character.y).abs
-      if dx <= 1 && dy <= 1
+      dx = (@real_x - @abs_target.character.real_x).abs
+      dy = (@real_y - @abs_target.character.real_y).abs
+      if dx + dy <= 256
         target_attack(@abs_target.character, @enemy_combo[2])
         if (rand(@combo_max * 2) <= (@combo_max - @enemy_combo[2] + 1) && @enemy_combo[2] < @combo_max)
           @enemy_combo[1] = rand(10) + 10
@@ -3674,9 +3733,9 @@ class Game_Event < Game_Character
   #--------------------------------------------------------------------------
   
   def use_autoattack(char)       
-    dx = (@x - char.x).abs
-    dy = (@y - char.y).abs
-    if dx <= 1 && dy <= 1
+    dx = (@real_x - char.real_x).abs
+    dy = (@real_y - char.real_y).abs
+    if dx + dy <= 256
       target_attack(char, @enemy_combo[2])
       @abs_wait = 40
       if (rand(@combo_max * 2) <= @combo_max)
@@ -3697,7 +3756,7 @@ class Game_Event < Game_Character
       abs_targets = ABS_Targets.new
       abs_targets.push(ABS_Target.new($game_player, get_dist($game_player)))
       $game_party.followers.each do |char|
-        if char.battler != nil
+        if char.battler != nil && char.actor != nil
           abs_targets.push(ABS_Target.new(char, get_dist(char)))
         end
       end
@@ -3739,6 +3798,7 @@ class Game_Event < Game_Character
     return if skills.size <= 0
     skill = $data_skills[skills[rand(skills.size)]]
     return if skill.nil?
+    delay = DELAY
     if (skill.for_user? || skill.for_friend?)
       self.suffer_skill(self, skill, delay)
     elsif skill.for_opponent?
@@ -3876,21 +3936,24 @@ class Game_Player < Game_Character
     elsif x_plus.abs > y_plus.abs         
       y_plus < 0 ? turn_up : turn_down
     end
+    
+    if jumpable?(@x + x_plus, @y + y_plus)
+      x_plus *= 2
+      y_plus *= 2
+    end
+
     if passable?(@x + x_plus, @y + y_plus)
       @x += x_plus
       @y += y_plus
       $game_party.update_move(5, x_plus, y_plus)
       distance = 1# Math.sqrt(x_plus * x_plus + y_plus * y_plus).round
       @jump_peak = 10 + distance - @move_speed
-      @jump_count = @jump_peak * 2
-      @stop_count = 0
-      straighten
     else
       @jump_peak = 10 - @move_speed
-      @jump_count = @jump_peak * 2
-      @stop_count = 0
-      straighten
     end
+    @jump_count = @jump_peak * 2
+    @stop_count = 0
+    straighten
   end
 
   #--------------------------------------------------------------------------
@@ -4057,56 +4120,6 @@ class Game_Player < Game_Character
   end
 
   #--------------------------------------------------------------------------
-  # ● Item
-  #--------------------------------------------------------------------------
-
-  def use_skill(skill, delay = 0, animation = true)
-    @last_action_type = 1
-    @last_action = skill
-    return false if skill.nil?
-    $game_temp.in_battle = true
-    unless @battler.abs_skill_can_use?(skill, true)
-      $game_temp.in_battle = false
-      Sound.play_buzzer
-      return false
-    end
-    $game_temp.in_battle = false
-    @battler.mp -= skill.mp_cost
-    data = PRABS::CONFIG::DATABASE.get_skill(skill.id)
-    a_name = data[3].nil? ? "" : data[3]
-    setup_animation(data[3].nil? ? "" : data[3]) if animation
-    @battler.used_skill(skill)
-    if (data[2] == PRABS::CONFIG::TYPE::SHOOT)
-      if (data[4] != nil && data[4].size >= 2)
-        if ($game_party.item_number($data_items[data[4][0]]) < data[4][1])
-          Sound.play_buzzer
-          return false
-        end
-        if (data[4][2] == true)
-          $game_party.lose_item($data_items[data[4][0]], 1)
-        end
-      end
-      if (data[5] != nil)
-        $game_map.setup_map_animation(data[5], @x, @y, @direction)
-      end
-      event = $game_map.setup_shoot_event(data[0], data[1], self, delay)
-      event.type = 0
-      event.type_id = skill.id
-      return true
-    end
-    targets = []
-    if (skill.for_user? || skill.for_friend?)
-      self.suffer_skill(self, skill, delay)
-    elsif skill.for_opponent?
-      targets = skill_area(skill)
-      for target in targets
-        @hitted |= target.suffer_skill(self, skill, delay)
-      end
-    end
-    return true
-  end
-
-  #--------------------------------------------------------------------------
   # ● Atualiza as teclas
   #--------------------------------------------------------------------------
 
@@ -4208,6 +4221,10 @@ class Game_Player < Game_Character
   # ● Ataque da mão esquerda
   #--------------------------------------------------------------------------
 
+  def attack_animation(left_handed, x, y)
+    $game_map.setup_map_animation((left_handed ? @battler.atk_animation_id2 : @battler.atk_animation_id), x, y, @direction)
+  end
+
   def cast_sequence(sequence, left_handed = false)
     if sequence[5].is_a?(String)
       return false unless ($game_system.sequence_switches[sequence[5]] == true)
@@ -4218,28 +4235,41 @@ class Game_Player < Game_Character
     @hitted = false
     if (sequence[1] == 0)
       @abs_wait = setup_animation(sequence[2])
-      @abs_wait ||= 0
       front_x = $game_map.x_with_direction(@x, @direction)
       front_y = $game_map.y_with_direction(@y, @direction)
-      $game_map.setup_map_animation((left_handed ? @battler.atk_animation_id2 : @battler.atk_animation_id), front_x, front_y, @direction)
+      attack_animation(left_handed, front_x, front_y)
       for event in $game_map.screen_events_xy(front_x, front_y)
         @hitted |= event.suffer_attack(self, delay, left_handed) if event.weapon_hittable?
+      end
+      if @battler.weapon_id == 33 && $game_map.tall_ground?(front_x, front_y) # Pickaxe ID 33
+        pickaxe_tall_ground(front_x, front_y)
       end
       return
     elsif (sequence[1] < 0)
       if (use_item($data_items[sequence[1]], delay, false))
         @abs_wait = setup_animation(sequence[2])
-        @abs_wait ||= 0
         return true
       end
       return false
     end
     if (use_skill($data_skills[sequence[1]], delay, false))
       @abs_wait = setup_animation(sequence[2])
-      @abs_wait ||= 0
       return true
     end
     return false
+  end
+
+  def pickaxe_tall_ground(x, y)
+    $game_map.data[x, y, 0] = 1584
+    paint_side_walls = true
+    for i in 1..3
+      paint_side_walls = $game_map.tall_ground?(x, y - i)
+      break unless paint_side_walls
+    end
+    if paint_side_walls
+      $game_map.data[x, y - 1, 0] = 8109
+      $game_map.data[x, y - 2, 0] = 8103
+    end
   end
       
   #--------------------------------------------------------------------------
@@ -4504,7 +4534,6 @@ class Game_Map
     enemy = char.battler
     if PRCoders.logged_and_loaded?("ManyItems")
       items = enemy.drop_items
-      items += [enemy.drop_item1, enemy.drop_item2]
     else
       items = [enemy.drop_item1, enemy.drop_item2]
     end
@@ -4697,6 +4726,7 @@ class Game_Map
   #--------------------------------------------------------------------------
   
   def tile_waters?(tile_id)
+    return true if tile_id == 1596 # this is not a real water tile, but a patch for the dungeon 5
     return false if (tile_id < 2048 || tile_id >= 2768)
     return true if tile_id >= 2048 && tile_id < 2096
     return true if tile_id >= 2240 && tile_id < 2288
@@ -4705,6 +4735,19 @@ class Game_Map
     return true if tile_id >= 2528 && tile_id < 2576
     return true if tile_id >= 2624 && tile_id < 2672
     return true if tile_id >= 2720 && tile_id < 2768
+    return false
+  end
+
+  #--------------------------------------------------------------------------
+  # ● Is tile a tall ground? (destructible with the Pickaxe)
+  #--------------------------------------------------------------------------
+
+  def tall_ground?(x, y)
+    tile_id = get_tile_id(x, y, 0)
+    if tile_id != nil
+      return true if tile_id >= 7712 && tile_id <= 7758
+      return true if tile_id >= 8096 && tile_id <= 8111
+    end
     return false
   end
   
@@ -4723,7 +4766,7 @@ class Game_Map
       return false if pass & flag == flag   # [×] : 通行不可
     end
     for i in [2, 1, 0]                      # レイヤーの上から順に調べる
-      tile_id = @map.data[x, y, i]          # タイル ID を取得
+      tile_id = get_tile_id(x, y, i)
       return false if tile_id == nil        # タイル ID 取得失敗 : 通行不可
       return true if tile_waters?(tile_id)
       pass = @passages[tile_id]             # 通行属性を取得
@@ -4732,6 +4775,10 @@ class Game_Map
       return false if pass & flag == flag   # [×] : 通行不可
     end
     return false                            # 通行不可
+  end
+
+  def get_tile_id(x, y, z)
+    return @map.data[x, y, z]               # タイル ID を取得
   end
 
 end
@@ -4751,9 +4798,20 @@ class Game_Interpreter
       $game_map.events[@event_id].refresh
     end
   end
+
+  def reset_balloon
+    $game_map.events[@event_id].permanent_balloon_id = 0
+  end
   
   def hit_weapon?(weapon_id)
-    return ($game_self_switches.data[[@map_id, @event_id, "WHIT_ID"]] == weapon_id)
+    if (weapon_id.is_a?(Array))
+      for id in weapon_id
+        return true if hit_weapon?(id)
+      end
+      return false
+    else
+      return ($game_self_switches.data[[@map_id, @event_id, "WHIT_ID"]] == weapon_id)
+    end
   end
   
   def hit_item?(item_id)
@@ -4761,7 +4819,14 @@ class Game_Interpreter
   end
   
   def hit_skill?(skill_id)
-    return ($game_self_switches.data[[@map_id, @event_id, "SHIT_ID"]] == skill_id)
+    if (skill_id.is_a?(Array))
+      for id in skill_id
+        return true if hit_skill?(id)
+      end
+      return false
+    else
+      return ($game_self_switches.data[[@map_id, @event_id, "SHIT_ID"]] == skill_id)
+    end
   end
   
   def learn_sequence(name)
@@ -4910,8 +4975,9 @@ class Sprite_Character < Sprite_Base
         sy = (index / 4 * 4 + (@character.direction - 2) / 2) * @ch
       else
         pattern = (@character.shielded ? (character.pattern < 3 ? @character.pattern : 1) : @character.abs_animation.index)
+        is_second_row = !PRABS::UTILS.has_dollar_sign?(@character.abs_animation.name) && @character.character_index >= 4
         sx = (@cw * pattern)
-        sy = (@character.direction - 2) / 2 * @ch
+        sy = (@character.direction - 2) / 2 * @ch + (is_second_row ? 128 : 0)
       end
       self.src_rect.set(sx, sy, @cw, @ch)
       return

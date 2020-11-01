@@ -24,12 +24,27 @@
 #==============================================================================
 
 module PRABS::CONFIG::ENEMY
-  
-#==============================================================================
-# Enemy 1
-#==============================================================================
-  
-# Attack
-self.setup_attack_enemy_animation(11, 0, "Attack", 84)
 
+    DEFAULT_ANIMATION_ATTACK_ID = 84
+  
+    # Wasp - ID 3, 47
+    self.setup_attack_enemy_animation([3, 47], 0, "", 92)
+
+    # Bat - ID 21, 14
+    self.setup_attack_enemy_animation([2, 14], 0, "", 93)
+
+    # Wolves - ID 46
+    self.setup_attack_enemy_animation(46, 0, "", 94)
+
+    # Valorias - ID 49, 50
+    self.setup_attack_enemy_animation([49, 50], 0, "", 95)
+
+    # Bosses - ID 33, 36, 37, 38, 39, 52
+    self.setup_attack_enemy_animation([33, 36, 37, 38, 39, 52], 0, "", 96)
+
+    # Ice - ID 19, 40
+    self.setup_attack_enemy_animation([19, 40], 0, "", 97)
+
+    # Big Monsters - ID 17, 41, 44, 45, 48
+    self.setup_attack_enemy_animation([17, 41, 44, 45, 48], 0, "", 98)
 end

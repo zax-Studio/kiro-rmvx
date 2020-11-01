@@ -18,7 +18,11 @@ class Scene_Skill < Scene_Base
   def start
     super
     create_menu_background
-    @actor = $game_party.members[@actor_index]
+    if @actor_index.nil?
+      @actor = $game_actors[9] # Defaulting to Kiro's ID
+    else
+      @actor = $game_party.members[@actor_index]
+    end
     @viewport = Viewport.new(0, 0, 544, 416)
     @help_window = Window_Help.new
     @help_window.viewport = @viewport
@@ -86,12 +90,12 @@ class Scene_Skill < Scene_Base
     if Input.trigger?(Input::B)
       Sound.play_cancel
       return_scene
-    elsif Input.trigger?(Input::R)
-      Sound.play_cursor
-      next_actor
-    elsif Input.trigger?(Input::L)
-      Sound.play_cursor
-      prev_actor
+    # elsif Input.trigger?(Input::R)
+    #   Sound.play_cursor
+    #   next_actor
+    # elsif Input.trigger?(Input::L)
+    #   Sound.play_cursor
+    #   prev_actor
     elsif Input.trigger?(Input::C)
       @skill = @skill_window.skill
       if @skill != nil

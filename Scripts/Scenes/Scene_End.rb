@@ -115,6 +115,7 @@ class Scene_End < Scene_Base
     RPG::BGM.fade(800)
     RPG::BGS.fade(800)
     RPG::ME.fade(800)
+    $keywindow.terminate unless $keywindow.nil?
     $scene = Scene_Title.new
     close_command_window
     Graphics.fadeout(60)

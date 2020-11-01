@@ -1,7 +1,12 @@
 temp.png
 
+Folders.dll
+
 *.log
 *.rar
 *.zip
+
+/*.rvdata
+/*.png
 
 Backup_Data/
